@@ -751,10 +751,16 @@ router.post(
         });
       }
 
+      // Normalize and safely truncate post content for AI prompt
+      const rawPost = (postContent || "").toString();
+      const trimmedPost = rawPost.trim();
+      const safePostContent =
+        trimmedPost.length > 4000 ? trimmedPost.slice(0, 4000) : trimmedPost;
+
       // Generate content using Google AI
       console.log("💬 Calling Google AI for comment generation...");
       console.log("Data:", {
-        postContent: postContent?.substring(0, 100) + "...",
+        postContent: safePostContent?.substring(0, 100) + "...",
         personaName: persona.name,
         personaTone: persona.tone,
         commentType: commentType || "value_add",
@@ -773,7 +779,7 @@ router.post(
       let aiResponse;
       try {
         aiResponse = await googleAIService.generateComment(
-          postContent,
+          safePostContent,
           persona,
           profileInsights,
           commentType || "value_add"

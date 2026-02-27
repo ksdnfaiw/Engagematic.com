@@ -137,8 +137,9 @@ export const validatePostGenerationWithoutHook = [
 export const validateCommentGeneration = [
   body("postContent")
     .trim()
-    .isLength({ min: 10, max: 2000 })
-    .withMessage("Post content must be between 10 and 2000 characters"),
+    // Allow longer LinkedIn posts but cap at a safe upper bound.
+    .isLength({ min: 10, max: 4000 })
+    .withMessage("Post content must be between 10 and 4000 characters"),
   // personaId is now optional (can send persona data directly)
   // Skip validation entirely if personaId is not provided
   body("personaId")

@@ -192,22 +192,30 @@ const CommentGenerator = () => {
           }, 5000);
         }
       } else {
+        const message =
+          result.error ||
+          "Could not generate comments. Please try again.";
+
         toast({
           title: "Generation failed",
-          description: "Could not generate comments. Please try again.",
+          description: message,
           variant: "destructive",
         });
 
         // Check if error is due to quota exceeded
-        if (result.error?.includes('limit') || result.error?.includes('quota') || result.error?.includes('exceeded')) {
+        if (
+          message.toLowerCase().includes("limit") ||
+          message.toLowerCase().includes("quota") ||
+          message.toLowerCase().includes("exceeded")
+        ) {
           setShowUpgradePopup(true);
         }
       }
-    } catch (error) {
-      console.error('Failed to generate comments:', error);
+    } catch (error: any) {
+      console.error("Failed to generate comments:", error);
       toast({
         title: "Generation failed",
-        description: "Could not generate comments. Please try again.",
+        description: error?.message || "Could not generate comments. Please try again.",
         variant: "destructive",
       });
     }
