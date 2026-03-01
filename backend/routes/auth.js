@@ -508,6 +508,16 @@ router.put("/profile", authenticateToken, async (req, res) => {
       if (profile.postFormatting !== undefined) updateData.profile.postFormatting = profile.postFormatting;
       if (profile.usageContext !== undefined) updateData.profile.usageContext = profile.usageContext;
       if (profile.workContext !== undefined) updateData.profile.workContext = profile.workContext;
+      // AI Voice & Style (optional)
+      if (profile.aiVoice !== undefined && typeof profile.aiVoice === "object") {
+        const av = profile.aiVoice;
+        updateData.profile.aiVoice = {
+          description: typeof av.description === "string" ? av.description.trim().slice(0, 500) : "",
+          tone: ["formal", "neutral", "casual"].includes(av.tone) ? av.tone : "neutral",
+          boldness: ["safe", "balanced", "bold"].includes(av.boldness) ? av.boldness : "balanced",
+          emojiPreference: ["never", "sometimes", "often"].includes(av.emojiPreference) ? av.emojiPreference : "sometimes",
+        };
+      }
     }
     
     // Update nested persona object

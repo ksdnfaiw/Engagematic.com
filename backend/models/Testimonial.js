@@ -62,6 +62,9 @@ const testimonialSchema = new mongoose.Schema(
         "manual",
         "public_link",
         "admin_created",
+        "post",   // from TestimonialPopup contentType
+        "comment",
+        "idea",
       ],
       required: true,
     },

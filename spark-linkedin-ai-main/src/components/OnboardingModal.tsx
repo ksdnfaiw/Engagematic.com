@@ -92,6 +92,11 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
     // Step 3: Preferences
     linkedinUrl: "",
     postFormatting: "plain",
+    // Step 4: AI Voice (optional)
+    aiVoiceDescription: "",
+    aiVoiceTone: "neutral",
+    aiVoiceBoldness: "balanced",
+    aiVoiceEmoji: "sometimes",
   });
   const [showCustomIndustry, setShowCustomIndustry] = useState(false);
   const [industrySearch, setIndustrySearch] = useState("");
@@ -99,7 +104,8 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
   const steps = [
     { id: 1, title: "Profile", icon: User },
     { id: 2, title: "AI Persona", icon: Sparkles },
-    { id: 3, title: "Preferences", icon: Heart }
+    { id: 3, title: "Preferences", icon: Heart },
+    { id: 4, title: "Content style", icon: FileText },
   ];
 
   const handleChange = (field: string, value: any) => {
@@ -136,7 +142,8 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
       case 2:
         return !!formData.writingStyle && !!formData.tone;
       case 3:
-        return true; // Step 3 is optional
+      case 4:
+        return true;
       default:
         return false;
     }
@@ -144,10 +151,14 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
+      if (currentStep === 4) {
+        // Step 4 uses its own buttons (Save & Continue / Skip)
+        return;
+      }
       if (currentStep === 3) {
-        handleSubmit();
+        setCurrentStep(4);
       } else {
-        setCurrentStep(prev => Math.min(prev + 1, 3));
+        setCurrentStep(prev => Math.min(prev + 1, 4));
       }
     }
   };
@@ -156,21 +167,30 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (includeAiVoice = false) => {
     setIsLoading(true);
     try {
+      const profilePayload: Record<string, unknown> = {
+        onboardingCompleted: true,
+        jobTitle: formData.jobTitle || null,
+        company: formData.company || null,
+        industry: formData.customIndustry || formData.industry || null,
+        experience: formData.experience || null,
+        linkedinUrl: formData.linkedinUrl || null,
+        postFormatting: formData.postFormatting || "plain",
+        usageContext: formData.usageContext || null,
+        workContext: formData.workContext || null,
+      };
+      if (includeAiVoice) {
+        profilePayload.aiVoice = {
+          description: (formData.aiVoiceDescription || "").trim().slice(0, 500),
+          tone: formData.aiVoiceTone || "neutral",
+          boldness: formData.aiVoiceBoldness || "balanced",
+          emojiPreference: formData.aiVoiceEmoji || "sometimes",
+        };
+      }
       const response = await api.updateProfile({
-        profile: {
-          onboardingCompleted: true,
-          jobTitle: formData.jobTitle || null,
-          company: formData.company || null,
-          industry: formData.customIndustry || formData.industry || null,
-          experience: formData.experience || null,
-          linkedinUrl: formData.linkedinUrl || null,
-          postFormatting: formData.postFormatting || "plain",
-          usageContext: formData.usageContext || null,
-          workContext: formData.workContext || null,
-        },
+        profile: profilePayload,
         persona: {
           name: formData.personaName || `${formData.jobTitle || 'Professional'} Persona`,
           writingStyle: formData.writingStyle || null,
@@ -214,7 +234,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
     }
   };
 
-  const progress = (currentStep / 3) * 100;
+  const progress = (currentStep / 4) * 100;
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
@@ -768,6 +788,77 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
               </div>
             </div>
           )}
+
+          {/* Step 4: Set your content style (optional) */}
+          {currentStep === 4 && (
+            <div className="space-y-4 pb-6 animate-in fade-in slide-in-from-right-4 duration-200">
+              <div className="text-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center mx-auto mb-2 shadow-md">
+                  <FileText className="h-6 w-6 text-white" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold mb-1">Set your content style (optional)</h2>
+                <p className="text-xs text-muted-foreground">Tell Engagematic how you want your content to read. You can change this anytime in Settings.</p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="aiVoiceDescription" className="text-xs font-medium">Describe your style</Label>
+                  <Textarea
+                    id="aiVoiceDescription"
+                    placeholder="Example: Direct, no fluff, slightly humorous, no emojis. I write for B2B SaaS founders and prefer practical, step-by-step posts."
+                    value={formData.aiVoiceDescription}
+                    onChange={(e) => handleChange('aiVoiceDescription', e.target.value)}
+                    className="text-sm min-h-[80px] resize-none"
+                    maxLength={500}
+                    disabled={isLoading}
+                  />
+                  <p className="text-[10px] text-muted-foreground">{formData.aiVoiceDescription.length}/500</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Tone</Label>
+                    <select
+                      value={formData.aiVoiceTone}
+                      onChange={(e) => handleChange('aiVoiceTone', e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs"
+                      disabled={isLoading}
+                    >
+                      <option value="formal">Formal</option>
+                      <option value="neutral">Neutral</option>
+                      <option value="casual">Casual</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Boldness</Label>
+                    <select
+                      value={formData.aiVoiceBoldness}
+                      onChange={(e) => handleChange('aiVoiceBoldness', e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs"
+                      disabled={isLoading}
+                    >
+                      <option value="safe">Safe</option>
+                      <option value="balanced">Balanced</option>
+                      <option value="bold">Bold</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Emojis</Label>
+                    <select
+                      value={formData.aiVoiceEmoji}
+                      onChange={(e) => handleChange('aiVoiceEmoji', e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs"
+                      disabled={isLoading}
+                    >
+                      <option value="never">Never</option>
+                      <option value="sometimes">Sometimes</option>
+                      <option value="often">Often</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Compact Navigation Buttons */}
@@ -785,30 +876,59 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
               Back
             </Button>
 
-            <Button
-              type="button"
-              onClick={handleNext}
-              disabled={isLoading || !canProceed()}
-              className="gap-1.5 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 h-9 text-xs flex-1 sm:flex-initial sm:px-6"
-              size="sm"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  {currentStep === 3 ? "Saving..." : "Loading..."}
-                </>
-              ) : currentStep === 3 ? (
-                <>
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Complete 🚀
-                </>
-              ) : (
-                <>
-                  Next
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </>
-              )}
-            </Button>
+            {currentStep === 4 ? (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => handleSubmit(false)}
+                  disabled={isLoading}
+                  className="gap-1.5 h-9 text-xs"
+                  size="sm"
+                >
+                  Skip for now
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => handleSubmit(true)}
+                  disabled={isLoading}
+                  className="gap-1.5 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 h-9 text-xs sm:px-6"
+                  size="sm"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Save & Continue
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : (
+              <Button
+                type="button"
+                onClick={handleNext}
+                disabled={isLoading || !canProceed()}
+                className="gap-1.5 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 h-9 text-xs flex-1 sm:flex-initial sm:px-6"
+                size="sm"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    Next
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>

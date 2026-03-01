@@ -161,25 +161,43 @@ router.get(
   }
 );
 
-// Update user profile information
+// Update user profile information (merge profile fields so we don't overwrite)
 router.put("/update", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
     const updates = req.body;
 
-    // Allowed fields
-    const allowedFields = ["name", "profile"];
-    const filteredUpdates = {};
+    const setOps = {};
 
-    Object.keys(updates).forEach((key) => {
-      if (allowedFields.includes(key) || key.startsWith("profile.")) {
-        filteredUpdates[key] = updates[key];
+    if (updates.name !== undefined) setOps.name = updates.name;
+
+    if (updates.profile && typeof updates.profile === "object") {
+      const p = updates.profile;
+      if (p.jobTitle !== undefined) setOps["profile.jobTitle"] = p.jobTitle;
+      if (p.company !== undefined) setOps["profile.company"] = p.company;
+      if (p.bio !== undefined) setOps["profile.bio"] = p.bio;
+      if (p.linkedinUrl !== undefined) setOps["profile.linkedinUrl"] = p.linkedinUrl;
+      if (p.postFormatting !== undefined) setOps["profile.postFormatting"] = p.postFormatting;
+      if (p.usageContext !== undefined) setOps["profile.usageContext"] = p.usageContext;
+      if (p.workContext !== undefined) setOps["profile.workContext"] = p.workContext;
+      if (p.industry !== undefined) setOps["profile.industry"] = p.industry;
+      if (p.experience !== undefined) setOps["profile.experience"] = p.experience;
+      if (p.onboardingCompleted !== undefined) setOps["profile.onboardingCompleted"] = p.onboardingCompleted;
+
+      if (p.aiVoice !== undefined) {
+        const av = typeof p.aiVoice === "object" ? p.aiVoice : {};
+        setOps["profile.aiVoice"] = {
+          description: typeof av.description === "string" ? av.description.trim().slice(0, 500) : "",
+          tone: ["formal", "neutral", "casual"].includes(av.tone) ? av.tone : "neutral",
+          boldness: ["safe", "balanced", "bold"].includes(av.boldness) ? av.boldness : "balanced",
+          emojiPreference: ["never", "sometimes", "often"].includes(av.emojiPreference) ? av.emojiPreference : "sometimes",
+        };
       }
-    });
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { $set: filteredUpdates },
+      { $set: setOps },
       { new: true, runValidators: true }
     ).select("-password");
 

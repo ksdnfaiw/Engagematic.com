@@ -156,15 +156,21 @@ router.post("/submit", authenticateToken, async (req, res) => {
       });
     }
 
-    // Check if user has already submitted a testimonial
+    // Check if user has already submitted a testimonial (one per user)
     const existingTestimonial = await Testimonial.findOne({
       userId: req.user._id,
     });
 
     if (existingTestimonial) {
-      return res.status(400).json({
-        success: false,
+      return res.json({
+        success: true,
+        alreadySubmitted: true,
         message: "You have already submitted a testimonial. Thank you!",
+        data: {
+          id: existingTestimonial._id,
+          rating: existingTestimonial.rating,
+          status: existingTestimonial.status,
+        },
       });
     }
 
@@ -181,6 +187,16 @@ router.post("/submit", authenticateToken, async (req, res) => {
 
     const actionCount = postsCount + commentsCount;
 
+    // Normalize triggeredBy from popup (post/comment/idea) to schema values
+    const normalizedTriggeredBy =
+      triggeredBy === "post"
+        ? "first_post"
+        : triggeredBy === "comment"
+          ? "first_comment"
+          : triggeredBy === "idea"
+            ? "manual"
+            : triggeredBy || "manual";
+
     // Create testimonial
     const testimonial = new Testimonial({
       userId: req.user._id,
@@ -192,7 +208,7 @@ router.post("/submit", authenticateToken, async (req, res) => {
         displayName?.trim() || req.user.name || req.user.email.split("@")[0],
       jobTitle: jobTitle?.trim() || req.user.profile?.jobTitle || "",
       company: company?.trim() || req.user.profile?.company || "",
-      triggeredBy: triggeredBy || "manual",
+      triggeredBy: normalizedTriggeredBy,
       actionCount,
       status: "pending",
     });

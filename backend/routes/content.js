@@ -229,7 +229,8 @@ router.post(
           profileInsights,
           userProfile, // Pass user profile for deep personalization
           postFormatting, // User's formatting preference
-          trainingPosts // User's selected training posts (premium)
+          trainingPosts, // User's selected training posts (premium)
+          { aiVoice: user.profile?.aiVoice || null }
         );
       } catch (aiError) {
         console.error("❌ Google AI error during post generation:", {
@@ -339,6 +340,76 @@ router.post(
         success: false,
         message,
         error: config.NODE_ENV === "development" ? error.message : undefined,
+      });
+    }
+  }
+);
+
+// Preview post with user's AI Voice (no quota deduction, no save)
+router.post(
+  "/posts/preview-voice",
+  authenticateToken,
+  async (req, res) => {
+    try {
+      const userId = req.user._id;
+      const postIdea = (req.body.postIdea || "").toString().trim().slice(0, 300);
+      if (!postIdea) {
+        return res.status(400).json({
+          success: false,
+          message: "postIdea is required (short post idea or topic)",
+        });
+      }
+
+      const User = (await import("../models/User.js")).default;
+      const user = await User.findById(userId).select("profile.aiVoice persona").lean();
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+      }
+
+      const aiVoice = user.profile?.aiVoice || null;
+      const minimalPersona = {
+        name: user.persona?.name || "Professional",
+        industry: "Business",
+        experience: "Mid-level",
+        tone: aiVoice?.tone || user.persona?.tone || "professional",
+        writingStyle: "clear and engaging",
+        description: "Thought leader sharing actionable insights",
+      };
+      const defaultHook = "Here's what I've been thinking about.";
+
+      const aiResponse = await googleAIService.generatePost(
+        postIdea,
+        defaultHook,
+        minimalPersona,
+        null,
+        null,
+        null,
+        "plain",
+        [],
+        { aiVoice, maxOutputTokens: 1024 }
+      );
+
+      if (!aiResponse || !aiResponse.content) {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to generate preview",
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Preview generated",
+        data: { content: aiResponse.content },
+      });
+    } catch (error) {
+      console.error("Preview voice error:", error?.message);
+      const { status, message } = classifyAIError(error, "Failed to generate preview. Please try again.");
+      res.status(status).json({
+        success: false,
+        message,
       });
     }
   }
@@ -472,7 +543,8 @@ router.post(
           profileInsights,
           userProfile, // Pass user profile for deep personalization
           postFormatting, // User's formatting preference
-          trainingPosts // User's selected training posts (premium)
+          trainingPosts, // User's selected training posts (premium)
+          { aiVoice: user.profile?.aiVoice || null }
         );
       } catch (aiError) {
         console.error("❌ Google AI error during custom post generation:", {
@@ -776,13 +848,24 @@ router.post(
         console.warn("⚠️ Profile insights skipped for comment gen (non-critical):", insightsError.message);
       }
 
+      // Get user's AI Voice settings for comment style
+      let aiVoice = null;
+      try {
+        const User = (await import("../models/User.js")).default;
+        const userForVoice = await User.findById(userId).select("profile.aiVoice").lean();
+        aiVoice = userForVoice?.profile?.aiVoice || null;
+      } catch (voiceErr) {
+        console.warn("⚠️ AI voice fetch skipped for comment (non-critical):", voiceErr?.message);
+      }
+
       let aiResponse;
       try {
         aiResponse = await googleAIService.generateComment(
           safePostContent,
           persona,
           profileInsights,
-          commentType || "value_add"
+          commentType || "value_add",
+          aiVoice
         );
       } catch (aiError) {
         console.error("❌ Google AI error during comment generation:", {

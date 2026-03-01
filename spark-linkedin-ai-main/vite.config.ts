@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
     hmr: {
-      overlay: false,
+      overlay: true, // Show errors in browser so blank page is debuggable
     },
   },
   plugins: [

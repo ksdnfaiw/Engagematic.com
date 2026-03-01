@@ -29,6 +29,8 @@ import {
   Calendar,
   Globe,
   Bookmark,
+  FileText,
+  Sparkles,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import api from "../services/api";
@@ -97,6 +99,19 @@ export const UserProfile = () => {
     updates: true,
   });
 
+  // AI Voice & Style state
+  const [aiVoiceData, setAiVoiceData] = useState({
+    description: "",
+    tone: "neutral",
+    boldness: "balanced",
+    emojiPreference: "sometimes",
+  });
+  const [isSavingAiVoice, setIsSavingAiVoice] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [postIdeaInput, setPostIdeaInput] = useState("");
+  const [previewContent, setPreviewContent] = useState("");
+  const [previewLoading, setPreviewLoading] = useState(false);
+
   useEffect(() => {
     fetchPaymentHistory();
     fetchSavedPosts();
@@ -106,6 +121,18 @@ export const UserProfile = () => {
       setActiveTab("saved");
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const av = user?.profile?.aiVoice;
+    if (av) {
+      setAiVoiceData({
+        description: av.description || "",
+        tone: av.tone || "neutral",
+        boldness: av.boldness || "balanced",
+        emojiPreference: av.emojiPreference || "sometimes",
+      });
+    }
+  }, [user?.profile?.aiVoice]);
 
   const fetchPaymentHistory = async () => {
     setIsLoading(true);
@@ -220,6 +247,71 @@ export const UserProfile = () => {
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSaveAiVoice = async () => {
+    setIsSavingAiVoice(true);
+    try {
+      const response = await api.request("/profile/update", {
+        method: "PUT",
+        body: JSON.stringify({
+          profile: {
+            aiVoice: {
+              description: aiVoiceData.description.trim().slice(0, 500),
+              tone: aiVoiceData.tone,
+              boldness: aiVoiceData.boldness,
+              emojiPreference: aiVoiceData.emojiPreference,
+            },
+          },
+        }),
+      });
+      if (response.success && response.data && setUser) {
+        setUser(response.data);
+      }
+      toast({
+        title: "AI Style saved",
+        description: "Your content style has been updated.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Save failed",
+        description: error?.message || "Could not save AI Style settings.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingAiVoice(false);
+    }
+  };
+
+  const handlePreviewVoice = async () => {
+    const idea = postIdeaInput.trim().slice(0, 300);
+    if (!idea) {
+      toast({
+        title: "Enter a post idea",
+        description: "Type a short topic or idea to generate a preview.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setPreviewLoading(true);
+    setPreviewContent("");
+    try {
+      const response = await api.previewVoice(idea);
+      if (response?.success && response?.data?.content) {
+        setPreviewContent(response.data.content);
+      } else {
+        throw new Error(response?.message || "No content returned");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Preview failed",
+        description: error?.message || "Could not generate preview.",
+        variant: "destructive",
+      });
+      setPreviewContent("");
+    } finally {
+      setPreviewLoading(false);
     }
   };
 
@@ -413,7 +505,7 @@ export const UserProfile = () => {
               <div className="flex items-center gap-2 mt-2">
                 {user?.profile?.jobTitle && (
                   <Badge variant="outline">
-                    <Building className="h-3先进3 mr-1" />
+                    <Building className="h-3 w-3 mr-1" />
                     {user.profile.jobTitle}
                   </Badge>
                 )}
@@ -441,7 +533,7 @@ export const UserProfile = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-9 gap-1">
             <TabsTrigger value="profile">
               <User className="h-4 w-4 mr-2" />
               Profile
@@ -465,6 +557,10 @@ export const UserProfile = () => {
             <TabsTrigger value="referrals">
               <Globe className="h-4 w-4 mr-2" />
               Referrals
+            </TabsTrigger>
+            <TabsTrigger value="aivoice">
+              <FileText className="h-4 w-4 mr-2" />
+              AI Style
             </TabsTrigger>
             {subscription && subscription.plan !== 'trial' && (
               <TabsTrigger value="personalization">
@@ -566,6 +662,108 @@ export const UserProfile = () => {
                   </>
                 )}
               </Button>
+            </Card>
+          </TabsContent>
+
+          {/* AI Style Tab */}
+          <TabsContent value="aivoice" className="space-y-6">
+            <Card className="p-6 shadow-lg">
+              <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                AI Style
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                This is how Engagematic will write for you.
+              </p>
+              <p className="text-xs text-muted-foreground mb-6">
+                This affects LinkedIn posts, comments, and other AI-generated content.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="aiVoiceDesc">Describe your style</Label>
+                  <Textarea
+                    id="aiVoiceDesc"
+                    placeholder="Example: Direct, no fluff, slightly humorous, no emojis. I write for B2B SaaS founders and prefer practical, step-by-step posts."
+                    value={aiVoiceData.description}
+                    onChange={(e) => setAiVoiceData((p) => ({ ...p, description: e.target.value.slice(0, 500) }))}
+                    className="mt-1.5 min-h-[100px] resize-none"
+                    maxLength={500}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">{aiVoiceData.description.length}/500</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-xs font-medium">Tone</Label>
+                    <select
+                      value={aiVoiceData.tone}
+                      onChange={(e) => setAiVoiceData((p) => ({ ...p, tone: e.target.value }))}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm mt-1.5"
+                    >
+                      <option value="formal">Formal</option>
+                      <option value="neutral">Neutral</option>
+                      <option value="casual">Casual</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label className="text-xs font-medium">Boldness</Label>
+                    <select
+                      value={aiVoiceData.boldness}
+                      onChange={(e) => setAiVoiceData((p) => ({ ...p, boldness: e.target.value }))}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm mt-1.5"
+                    >
+                      <option value="safe">Safe</option>
+                      <option value="balanced">Balanced</option>
+                      <option value="bold">Bold</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label className="text-xs font-medium">Emojis</Label>
+                    <select
+                      value={aiVoiceData.emojiPreference}
+                      onChange={(e) => setAiVoiceData((p) => ({ ...p, emojiPreference: e.target.value }))}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm mt-1.5"
+                    >
+                      <option value="never">Never</option>
+                      <option value="sometimes">Sometimes</option>
+                      <option value="often">Often</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setPostIdeaInput("");
+                      setPreviewContent("");
+                      setPreviewOpen(true);
+                    }}
+                    className="gap-2"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    Preview voice
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleSaveAiVoice}
+                    disabled={isSavingAiVoice}
+                    className="gap-2"
+                  >
+                    {isSavingAiVoice ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4" />
+                        Save changes
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
             </Card>
           </TabsContent>
 
@@ -1115,6 +1313,54 @@ export const UserProfile = () => {
                 Delete Account
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Preview Style Dialog */}
+        <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Preview your style</DialogTitle>
+              <DialogDescription>
+                Enter a short post idea. We&apos;ll generate a sample using your saved AI Style settings. Save changes first if you just updated them.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div>
+                <Label htmlFor="previewIdea">Post idea</Label>
+                <Input
+                  id="previewIdea"
+                  placeholder="e.g. Why I switched to remote work"
+                  value={postIdeaInput}
+                  onChange={(e) => setPostIdeaInput(e.target.value.slice(0, 300))}
+                  className="mt-1.5"
+                />
+              </div>
+              <Button
+                type="button"
+                onClick={handlePreviewVoice}
+                disabled={previewLoading || !postIdeaInput.trim()}
+                className="w-full gap-2"
+              >
+                {previewLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    Generate preview
+                  </>
+                )}
+              </Button>
+              {previewContent && (
+                <div className="rounded-lg border bg-muted/50 p-4">
+                  <p className="text-xs font-medium text-muted-foreground mb-2">Sample post</p>
+                  <p className="text-sm whitespace-pre-wrap">{previewContent}</p>
+                </div>
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       </div>

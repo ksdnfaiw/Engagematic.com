@@ -131,6 +131,10 @@ const userSchema = new mongoose.Schema(
         type: String,
         default: null,
       },
+      bio: {
+        type: String,
+        default: null,
+      },
       onboardingCompleted: {
         type: Boolean,
         default: false,
@@ -147,6 +151,25 @@ const userSchema = new mongoose.Schema(
       workContext: {
         type: String,
         default: null,
+      },
+      // Custom AI Voice & Style (optional)
+      aiVoice: {
+        description: { type: String, default: "", maxlength: 500 },
+        tone: {
+          type: String,
+          enum: ["formal", "neutral", "casual"],
+          default: "neutral",
+        },
+        boldness: {
+          type: String,
+          enum: ["safe", "balanced", "bold"],
+          default: "balanced",
+        },
+        emojiPreference: {
+          type: String,
+          enum: ["never", "sometimes", "often"],
+          default: "sometimes",
+        },
       },
     },
     // User interests/topics

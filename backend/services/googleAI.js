@@ -267,6 +267,10 @@ class GoogleAIService {
       if (userProfile) {
         console.log("👤 User Profile:", userProfile);
       }
+      const aiVoice = options.aiVoice || null;
+      if (aiVoice) {
+        console.log("🎙️ AI Voice:", aiVoice.tone, aiVoice.boldness, aiVoice.emojiPreference);
+      }
 
       const prompt = this.buildPostPrompt(
         topic,
@@ -276,7 +280,8 @@ class GoogleAIService {
         profileInsights,
         userProfile,
         postFormatting,
-        trainingPosts
+        trainingPosts,
+        aiVoice
       );
 
       const maxOutputTokens = options.maxOutputTokens ?? 2048;
@@ -444,19 +449,24 @@ RULES:
     postContent,
     persona,
     profileInsights = null,
-    commentType = "value_add"
+    commentType = "value_add",
+    aiVoice = null
   ) {
     try {
       console.log("💬 Generating comments with Google AI...");
       console.log("Post content:", postContent.substring(0, 100) + "...");
       console.log("Persona:", persona.name);
       console.log("Comment type:", commentType);
+      if (aiVoice) {
+        console.log("🎙️ AI Voice:", aiVoice.tone, aiVoice.emojiPreference);
+      }
 
       const prompt = this.buildCommentPrompt(
         postContent,
         persona,
         profileInsights,
-        commentType
+        commentType,
+        aiVoice
       );
 
       const { result } = await this._generateWithFallback({
@@ -812,7 +822,8 @@ RULES:
     profileInsights = null,
     userProfile = null,
     postFormatting = "plain",
-    trainingPosts = []
+    trainingPosts = [],
+    aiVoice = null
   ) {
     const hookText =
       typeof hook === "string"
@@ -893,6 +904,20 @@ LinkedIn Profile Insights:
     // Add profile analyzer insights if available (from Profile Analyzer tool)
     if (profileInsights) {
       basePrompt += `\n\n${profileInsights}`;
+    }
+
+    // Add user's custom AI Voice & Style when set (optional)
+    if (aiVoice && (aiVoice.description || aiVoice.tone || aiVoice.boldness || aiVoice.emojiPreference)) {
+      basePrompt += `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎙️ USER'S PREFERRED WRITING STYLE (PRIORITY)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Match this style as closely as possible. If there is a conflict between generic defaults and these voice settings, prefer the user's voice.
+${aiVoice.description ? `- User's voice description: ${aiVoice.description}` : ""}
+- Tone: ${aiVoice.tone || "neutral"}
+- Boldness: ${aiVoice.boldness || "balanced"}
+- Emoji usage: ${aiVoice.emojiPreference || "sometimes"}`;
     }
 
     // Determine engagement goal based on user profile
@@ -1000,7 +1025,8 @@ Generate only the post content, no additional explanations.`;
     postContent,
     persona,
     profileInsights = null,
-    commentType = "value_add"
+    commentType = "value_add",
+    aiVoice = null
   ) {
     // Define comment type specific instructions
     const typeInstructions = {
@@ -1036,6 +1062,10 @@ Generate only the post content, no additional explanations.`;
     let prompt = `You are writing HIGH-ENGAGEMENT LinkedIn comments as ${persona.name} (${
       persona.tone
     } tone, ${persona.writingStyle} style).
+${aiVoice && (aiVoice.description || aiVoice.tone || aiVoice.emojiPreference) ? `
+USER'S PREFERRED STYLE (match this): ${aiVoice.description || "N/A"}
+Tone: ${aiVoice.tone || "neutral"}. Emoji usage: ${aiVoice.emojiPreference || "sometimes"}. Prefer the user's voice over generic defaults.
+` : ""}
 
 POST TO COMMENT ON:
 "${postContent}"

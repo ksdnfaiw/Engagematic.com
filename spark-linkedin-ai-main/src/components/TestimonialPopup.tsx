@@ -80,11 +80,14 @@ export const TestimonialPopup = ({
 
       if (result.success) {
         toast({
-          title: "Thank you! 🙏",
-          description: "Your feedback has been submitted successfully.",
+          title: result.alreadySubmitted ? "Thank you! 🙏" : "Thank you! 🙏",
+          description: result.alreadySubmitted
+            ? "You've already submitted your feedback. We appreciate it!"
+            : "Your feedback has been submitted successfully.",
         });
-        // Store in localStorage to prevent showing again
+        // Mark this content type and global so popup won't show again
         localStorage.setItem(`testimonial_submitted_${contentType}`, "true");
+        localStorage.setItem("testimonialSubmitted", "true");
         onOpenChange(false);
         setTestimonial("");
         setRating(0);

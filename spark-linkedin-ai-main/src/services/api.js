@@ -282,6 +282,13 @@ class ApiClient {
     });
   }
 
+  async previewVoice(postIdea) {
+    return this.request("/content/posts/preview-voice", {
+      method: "POST",
+      body: JSON.stringify({ postIdea: (postIdea || "").trim().slice(0, 300) }),
+    });
+  }
+
   // Content Planner - saved plans (dashboard)
   async listContentPlans() {
     return this.request("/content-plans", { method: "GET" });
