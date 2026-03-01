@@ -154,7 +154,7 @@ const userSchema = new mongoose.Schema(
       },
       // Custom AI Voice & Style (optional)
       aiVoice: {
-        description: { type: String, default: "", maxlength: 500 },
+        description: { type: String, default: "", maxlength: 6000 },
         tone: {
           type: String,
           enum: ["formal", "neutral", "casual"],

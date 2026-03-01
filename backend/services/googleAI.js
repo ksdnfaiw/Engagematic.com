@@ -906,15 +906,15 @@ LinkedIn Profile Insights:
       basePrompt += `\n\n${profileInsights}`;
     }
 
-    // Add user's custom AI Voice & Style when set (optional)
+    // Add user's custom AI Voice & Style when set (optional) — full context used for generation
     if (aiVoice && (aiVoice.description || aiVoice.tone || aiVoice.boldness || aiVoice.emojiPreference)) {
       basePrompt += `
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎙️ USER'S PREFERRED WRITING STYLE (PRIORITY)
+🎙️ USER'S PREFERRED WRITING STYLE & CONTEXT (PRIORITY — use in full)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Match this style as closely as possible. If there is a conflict between generic defaults and these voice settings, prefer the user's voice.
-${aiVoice.description ? `- User's voice description: ${aiVoice.description}` : ""}
+Read and apply the user's description below for all content generation. It may include company context, audience, tone, and preferences. Use this context completely; do not ignore or summarize it. If there is a conflict between generic defaults and these settings, prefer the user's voice.
+${aiVoice.description ? `- User's style & context: ${aiVoice.description}` : ""}
 - Tone: ${aiVoice.tone || "neutral"}
 - Boldness: ${aiVoice.boldness || "balanced"}
 - Emoji usage: ${aiVoice.emojiPreference || "sometimes"}`;
@@ -1063,8 +1063,8 @@ Generate only the post content, no additional explanations.`;
       persona.tone
     } tone, ${persona.writingStyle} style).
 ${aiVoice && (aiVoice.description || aiVoice.tone || aiVoice.emojiPreference) ? `
-USER'S PREFERRED STYLE (match this): ${aiVoice.description || "N/A"}
-Tone: ${aiVoice.tone || "neutral"}. Emoji usage: ${aiVoice.emojiPreference || "sometimes"}. Prefer the user's voice over generic defaults.
+USER'S PREFERRED STYLE & CONTEXT (use in full): ${aiVoice.description || "N/A"}
+Tone: ${aiVoice.tone || "neutral"}. Emoji usage: ${aiVoice.emojiPreference || "sometimes"}. Apply the user's context (company, audience, etc.) fully; prefer over generic defaults.
 ` : ""}
 
 POST TO COMMENT ON:

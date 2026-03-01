@@ -258,7 +258,7 @@ export const UserProfile = () => {
         body: JSON.stringify({
           profile: {
             aiVoice: {
-              description: aiVoiceData.description.trim().slice(0, 500),
+              description: aiVoiceData.description.trim().slice(0, 6000),
               tone: aiVoiceData.tone,
               boldness: aiVoiceData.boldness,
               emojiPreference: aiVoiceData.emojiPreference,
@@ -681,16 +681,16 @@ export const UserProfile = () => {
 
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="aiVoiceDesc">Describe your style</Label>
+                  <Label htmlFor="aiVoiceDesc">Describe your style (company context, audience, tone — up to ~1000 words)</Label>
                   <Textarea
                     id="aiVoiceDesc"
-                    placeholder="Example: Direct, no fluff, slightly humorous, no emojis. I write for B2B SaaS founders and prefer practical, step-by-step posts."
+                    placeholder="Example: Direct, no fluff, slightly humorous, no emojis. I write for B2B SaaS founders and prefer practical, step-by-step posts. Our company does X; our audience is Y. Use this context for all generated content."
                     value={aiVoiceData.description}
-                    onChange={(e) => setAiVoiceData((p) => ({ ...p, description: e.target.value.slice(0, 500) }))}
-                    className="mt-1.5 min-h-[100px] resize-none"
-                    maxLength={500}
+                    onChange={(e) => setAiVoiceData((p) => ({ ...p, description: e.target.value.slice(0, 6000) }))}
+                    className="mt-1.5 min-h-[120px] resize-y"
+                    maxLength={6000}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">{aiVoiceData.description.length}/500</p>
+                  <p className="text-xs text-muted-foreground mt-1">{aiVoiceData.description.length}/6000 (~{Math.round(aiVoiceData.description.length / 5)} words)</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>

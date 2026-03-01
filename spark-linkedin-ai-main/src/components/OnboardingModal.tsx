@@ -183,7 +183,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
       };
       if (includeAiVoice) {
         profilePayload.aiVoice = {
-          description: (formData.aiVoiceDescription || "").trim().slice(0, 500),
+          description: (formData.aiVoiceDescription || "").trim().slice(0, 6000),
           tone: formData.aiVoiceTone || "neutral",
           boldness: formData.aiVoiceBoldness || "balanced",
           emojiPreference: formData.aiVoiceEmoji || "sometimes",
@@ -802,17 +802,17 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
 
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="aiVoiceDescription" className="text-xs font-medium">Describe your style</Label>
+                  <Label htmlFor="aiVoiceDescription" className="text-xs font-medium">Describe your style (e.g. company context, audience, tone — up to ~1000 words)</Label>
                   <Textarea
                     id="aiVoiceDescription"
-                    placeholder="Example: Direct, no fluff, slightly humorous, no emojis. I write for B2B SaaS founders and prefer practical, step-by-step posts."
+                    placeholder="Example: Direct, no fluff, slightly humorous, no emojis. I write for B2B SaaS founders and prefer practical, step-by-step posts. Our company does X; our audience is Y. Use this context for all generated content."
                     value={formData.aiVoiceDescription}
-                    onChange={(e) => handleChange('aiVoiceDescription', e.target.value)}
-                    className="text-sm min-h-[80px] resize-none"
-                    maxLength={500}
+                    onChange={(e) => handleChange('aiVoiceDescription', e.target.value.slice(0, 6000))}
+                    className="text-sm min-h-[120px] resize-y"
+                    maxLength={6000}
                     disabled={isLoading}
                   />
-                  <p className="text-[10px] text-muted-foreground">{formData.aiVoiceDescription.length}/500</p>
+                  <p className="text-[10px] text-muted-foreground">{formData.aiVoiceDescription.length}/6000 (~{Math.round(formData.aiVoiceDescription.length / 5)} words)</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

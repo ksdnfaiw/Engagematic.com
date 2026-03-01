@@ -512,7 +512,7 @@ router.put("/profile", authenticateToken, async (req, res) => {
       if (profile.aiVoice !== undefined && typeof profile.aiVoice === "object") {
         const av = profile.aiVoice;
         updateData.profile.aiVoice = {
-          description: typeof av.description === "string" ? av.description.trim().slice(0, 500) : "",
+          description: typeof av.description === "string" ? av.description.trim().slice(0, 6000) : "",
           tone: ["formal", "neutral", "casual"].includes(av.tone) ? av.tone : "neutral",
           boldness: ["safe", "balanced", "bold"].includes(av.boldness) ? av.boldness : "balanced",
           emojiPreference: ["never", "sometimes", "often"].includes(av.emojiPreference) ? av.emojiPreference : "sometimes",
