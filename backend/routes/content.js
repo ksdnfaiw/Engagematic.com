@@ -355,7 +355,7 @@ router.post(
       const postIdea = (req.body.postIdea || "").toString().trim().slice(0, 300);
       if (!postIdea) {
         return res.status(400).json({
-          success: false,
+        success: false,
           message: "postIdea is required (short post idea or topic)",
         });
       }
@@ -1766,6 +1766,62 @@ ${angleInstruction}
 4. Each idea must have a clear engagement trigger
 5. Use specific numbers, details, and concrete examples
 6. Make hooks that create curiosity, controversy, emotion, or utility
+
+**HOOK ARCHITECTURE (NON-NEGOTIABLE — 80% of performance is the hook):**
+- Treat the first 1–2 lines (the **Hook**) as 80% of the post's performance.
+- Every idea MUST start from a strong hook that fits one or more of these 8 archetypes:
+
+1. **Social Proof Hook**
+   - Pattern: "I helped [X] do [Y]" / "We worked with [X clients] to..."
+   - Examples:
+     - "I helped a $50M ARR AI B2B SaaS go from X → Y..."
+     - "We worked with 200+ YC-backed startups to learn this..."
+
+2. **Credibility Hook**
+   - Pattern: "I've generated [X] for [ICP]" / "I analyzed [X data points]..."
+   - Examples:
+     - "I've generated 40M impressions for B2B founders..."
+     - "I analyzed 10,000 ad campaigns. Here's what actually works..."
+
+3. **Story Hook**
+   - Pattern: "I talked to [person] at [company]" / "I quit [company] and learned..."
+   - Examples:
+     - "I talked to the VP of Sales at a cybersec unicorn last week..."
+     - "I quit my new job in 2 months. 5 things I wish I knew before..."
+
+4. **Statistic Hook**
+   - Pattern: "[Industry] is shifting. X% of [role] do Y / don't know Z."
+   - Examples:
+     - "98% of SDRs are still doing this in 2026."
+     - "80% of CMOs chase the wrong metric. The top 1% do this instead..."
+
+5. **Contrarian Hook**
+   - Pattern: "[Common advice] is wrong" / "[Popular skill] is a waste of time."
+   - Examples:
+     - "'Post daily' is killing your growth."
+     - "Learning copywriting the way everyone teaches it is a waste of time in 2026."
+
+6. **Trend Hook**
+   - Pattern: "[X is dead]" / "[Macro trend] is changing everything."
+   - Examples:
+     - "Cold email is dead for most teams."
+     - "Big tech lost X% of its value. Here's what that means for operators."
+     - "AI will replace your job if you don't do this in the next 12 months."
+
+7. **Timeline Hook**
+   - Pattern: short timeline beats: "Year: Situation" → "Year: Outcome"
+   - Example:
+     - "2020: Waiting tables at Denny’s\n2023: Launched a tiny agency\n2026: Crossed $1M ARR"
+
+8. **Resource Hook**
+   - Pattern: "I built/collected [resource]" / "Playbook / guide / list."
+   - Examples:
+     - "I built an exhaustive outbound playbook for technical founders."
+     - "The 9-step system we used to triple demo bookings."
+     - "30 LinkedIn creators worth following if you're a B2B founder."
+
+- Frequently COMBINE 2–3 archetypes in a single hook (e.g., Social Proof + Credibility, Trend + Statistic, Story + Timeline, Resource + Credibility) while staying under the character limits.
+- Hooks must feel concrete, believable, and tailored to the **Topic** and **Target Audience**, not generic templates.
 
 **STRICT CHARACTER LIMITS (ENTIRE IDEA MUST BE UNDER 200 CHARS TOTAL):**
 - Title: MAX 35 characters

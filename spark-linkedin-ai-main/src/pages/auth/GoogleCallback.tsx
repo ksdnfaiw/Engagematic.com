@@ -50,6 +50,7 @@ const GoogleCallback = () => {
   }, [searchParams, googleLogin, navigate]);
 
   if (error) {
+    const isRedirectMismatch = error.includes("redirect URI") || error.includes("redirect_uri");
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-primary/5">
         <div className="text-center space-y-4 max-w-md">
@@ -57,7 +58,12 @@ const GoogleCallback = () => {
             <span className="text-red-500 text-2xl">✕</span>
           </div>
           <h2 className="text-xl font-semibold text-red-600">Google sign-in failed</h2>
-          <p className="text-muted-foreground text-sm">{error}</p>
+          <p className="text-muted-foreground text-sm whitespace-pre-wrap">{error}</p>
+          {isRedirectMismatch && (
+            <p className="text-muted-foreground text-xs bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded p-2">
+              Fix: In Google Cloud Console → APIs &amp; Credentials → your OAuth client → Authorized redirect URIs, add the exact URL shown above. Also ensure GOOGLE_CLIENT_SECRET is set on your backend (e.g. Render).
+            </p>
+          )}
           <p className="text-muted-foreground text-xs">Redirecting to login shortly, or click below.</p>
           <button
             type="button"
