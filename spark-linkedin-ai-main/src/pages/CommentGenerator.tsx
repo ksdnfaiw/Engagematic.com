@@ -101,11 +101,14 @@ const CommentGenerator = () => {
           variant: "destructive",
         });
       }
-    } catch (error) {
-      console.error('Failed to fetch from LinkedIn:', error);
+    } catch (error: any) {
+      console.error("Failed to fetch from LinkedIn:", error);
+      const message =
+        (error && typeof error.message === "string" && error.message) ||
+        "Could not fetch content from LinkedIn URL.";
       toast({
         title: "Fetch failed",
-        description: "Could not fetch content from LinkedIn URL.",
+        description: message,
         variant: "destructive",
       });
     } finally {

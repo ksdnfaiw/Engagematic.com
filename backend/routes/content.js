@@ -1171,11 +1171,31 @@ router.post(
     try {
       const { url } = req.body;
 
-      // Validate LinkedIn URL
-      if (!url.includes("linkedin.com/posts/")) {
+      // Validate LinkedIn URL (support both /posts/ and /feed/update/ styles)
+      let isValidLinkedInPostUrl = false;
+      try {
+        const parsed = new URL(url);
+        const hostname = parsed.hostname.replace(/^www\./i, "").toLowerCase();
+        const path = parsed.pathname.toLowerCase();
+
+        const isLinkedInHost = hostname === "linkedin.com";
+        const isPostPath =
+          path.includes("/posts/") ||
+          path.includes("/feed/update/") ||
+          path.includes("/pulse/");
+
+        if (isLinkedInHost && isPostPath) {
+          isValidLinkedInPostUrl = true;
+        }
+      } catch (e) {
+        isValidLinkedInPostUrl = false;
+      }
+
+      if (!isValidLinkedInPostUrl) {
         return res.status(400).json({
           success: false,
-          message: "Please provide a valid LinkedIn post URL",
+          message:
+            "Please provide a valid public LinkedIn post URL (for example a link that contains /posts/ or /feed/update/).",
         });
       }
 
