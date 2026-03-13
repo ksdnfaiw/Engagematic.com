@@ -1,8 +1,6 @@
 import { useState, useCallback } from "react";
+import dotenv from 'dotenv';
 
-const GOOGLE_CLIENT_ID =
-  import.meta.env.VITE_GOOGLE_CLIENT_ID ||
-  "502515400049-lb7r6k1qd6lqaqjjdqn0vu8b9ocoing9.apps.googleusercontent.com";
 
 interface Props {
   onSuccess?: (accessToken: string) => void;
@@ -16,14 +14,22 @@ function getGoogleOAuthURL() {
   // Must match EXACTLY one of the Authorized redirect URIs in Google Cloud Console (no trailing slash).
   const origin = window.location.origin.replace(/\/$/, "");
   const redirectUri = `${origin}/auth/google/callback`;
+
+
+  const GOOGLE_CLIENT_ID =  "502515400049-lb7r6k1qd6lqaqjjdqn0vu8b9ocoing9.apps.googleusercontent.com"
+  
+  // console.log(GOOGLE_CLIENT_ID);
+
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
     redirect_uri: redirectUri,
-    response_type: "code",
+    response_type: "token",
     scope: "email profile openid",
-    access_type: "offline",
+    // access_type: "offline",
     prompt: "select_account",
   });
+
+  console.log(params)
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 }
 
