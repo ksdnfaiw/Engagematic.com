@@ -190,7 +190,11 @@ router.post("/register", validateUserRegistration, async (req, res) => {
 // Google OAuth — verify token, create or log in user
 router.post("/google", async (req, res) => {
   try {
-    const { credential, access_token, code, redirect_uri, referralCode } = req.body;
+    const { credential, access_token, tokenOrCode, redirect_uri, referralCode } = req.body;
+
+    const code = tokenOrCode
+    console.log(access_token)
+    console.log(credential)
 
     if (!credential && !access_token && !code) {
       return res.status(400).json({
@@ -256,7 +260,7 @@ router.post("/google", async (req, res) => {
           audience: config.GOOGLE_CLIENT_ID,
         });
       } catch (verifyErr) {
-        console.error("Google token verification failed:", verifyErr.message);
+        console.log("Google token verification failed:", verifyErr.message);
         return res.status(401).json({
           success: false,
           message: "Invalid Google token",
@@ -283,7 +287,7 @@ router.post("/google", async (req, res) => {
         name = profile.name;
         picture = profile.picture;
       } catch (fetchErr) {
-        console.error("Google access token verification failed:", fetchErr.message);
+        console.log("Googleqqq access token verification failed:", fetchErr.message);
         return res.status(401).json({
           success: false,
           message: "Invalid Google access token",
