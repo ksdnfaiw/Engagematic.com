@@ -17,6 +17,8 @@ const GoogleCallback = () => {
     const code = searchParams.get("code");
     const errorParam = searchParams.get("error");
 
+    console.log(searchParams)
+
     if (errorParam) {
       setError(errorParam === "access_denied" ? "You cancelled the sign-in." : `Google error: ${errorParam}`);
       setTimeout(() => navigate("/auth/login"), 2500);
@@ -24,10 +26,22 @@ const GoogleCallback = () => {
     }
 
     if (!code) {
+
+      console.log(" CODE: misiing");
+
       setError("No authorization code received from Google.");
       setTimeout(() => navigate("/auth/login"), 2500);
       return;
     }
+
+    // Inside router.post("/google")
+    if (code) {
+      console.log("EXCHANGING CODE:", code);
+      
+    
+    
+    }
+    
 
     const referralCode = localStorage.getItem("engagematic_ref") || undefined;
     const origin = window.location.origin.replace(/\/$/, "");

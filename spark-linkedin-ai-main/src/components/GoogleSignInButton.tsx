@@ -23,9 +23,9 @@ function getGoogleOAuthURL() {
   const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
     redirect_uri: redirectUri,
-    response_type: "token",
+    response_type: "code",
     scope: "email profile openid",
-    // access_type: "offline",
+    access_type: "offline",
     prompt: "select_account",
   });
 
