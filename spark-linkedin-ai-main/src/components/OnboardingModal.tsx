@@ -74,8 +74,9 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
   const [errors, setErrors] = useState<any>({});
   const [formData, setFormData] = useState({
     // Step 1: Professional Info & Goals
-    primaryGoal: "",
+    goals: [] as string[],
     jobTitle: "",
+
     company: "",
     industry: "",
     customIndustry: "",
@@ -88,8 +89,9 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
     tone: "",
     expertise: "",
     targetAudience: "",
-    contentFocus: "",
+    contentFocus: [] as string[],
     // Step 3: Preferences
+
     linkedinUrl: "",
     postFormatting: "plain",
     // Step 4: AI Voice (optional)
@@ -109,19 +111,30 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
   ];
 
   const handleChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'goals' || field === 'contentFocus') {
+      const currentArray = formData[field] as string[];
+      const newArray = currentArray.includes(value)
+        ? currentArray.filter(item => item !== value)
+        : [...currentArray, value];
+      setFormData(prev => ({ ...prev, [field]: newArray }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
+    
     if (errors[field]) {
       setErrors((prev: any) => ({ ...prev, [field]: null }));
     }
   };
+
 
   const validateStep = (step: number): boolean => {
     const newErrors: any = {};
 
     switch (step) {
       case 1:
-        if (!formData.primaryGoal) newErrors.primaryGoal = "Please select your primary goal";
+        if (formData.goals.length === 0) newErrors.goals = "Please select at least one goal";
         break;
+
       case 2:
         if (!formData.writingStyle) newErrors.writingStyle = "Writing style is required";
         if (!formData.tone) newErrors.tone = "Tone is required";
@@ -138,7 +151,8 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
   const canProceed = (): boolean => {
     switch (currentStep) {
       case 1:
-        return !!formData.primaryGoal && !!formData.usageContext;
+        return formData.goals.length > 0 && !!formData.usageContext;
+
       case 2:
         return !!formData.writingStyle && !!formData.tone;
       case 3:
@@ -197,9 +211,10 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
           tone: formData.tone || null,
           expertise: formData.expertise || null,
           targetAudience: formData.targetAudience || null,
-          goals: formData.primaryGoal || null,
-          contentFocus: formData.contentFocus || null,
+          goals: formData.goals.length > 0 ? formData.goals : [],
+          contentFocus: formData.contentFocus.length > 0 ? formData.contentFocus : [],
           contentTypes: [],
+
         },
         interests: [],
       });
@@ -320,20 +335,23 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
 
               {/* Compact Goal Selection */}
               <div>
-                <Label className="text-xs font-medium mb-2 block">Primary Goal</Label>
+                <Label className="text-xs font-medium mb-1 block">Your Goals (Select all that apply) *</Label>
+                <p className="text-[10px] text-muted-foreground mb-2">We'll tailor your content strategy based on these.</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+
                   {GOALS.map((goal) => {
                     const Icon = goal.icon;
                     return (
                       <button
                         key={goal.id}
                         type="button"
-                        onClick={() => handleChange('primaryGoal', goal.id)}
+                        onClick={() => handleChange('goals', goal.id)}
                         className={`p-2.5 rounded-lg border-2 text-left transition-all duration-200 ${
-                          formData.primaryGoal === goal.id
-                            ? 'border-primary bg-primary/10 shadow-sm scale-105'
+                          formData.goals.includes(goal.id)
+                            ? 'border-primary bg-primary/10 shadow-sm'
                             : 'border-border hover:border-primary/50'
                         }`}
+
                         disabled={isLoading}
                       >
                         <div className="flex items-center gap-2">
@@ -341,16 +359,18 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
                             <Icon className="h-3.5 w-3.5" />
                           </div>
                           <span className="text-xs font-medium">{goal.label}</span>
-                          {formData.primaryGoal === goal.id && (
+                          {formData.goals.includes(goal.id) && (
                             <Check className="h-3 w-3 text-primary ml-auto" />
                           )}
+
                         </div>
                       </button>
                     );
                   })}
                 </div>
-                {errors.primaryGoal && <p className="text-xs text-red-500 mt-1">{errors.primaryGoal}</p>}
+                {errors.goals && <p className="text-xs text-red-500 mt-1">{errors.goals}</p>}
               </div>
+
 
               {/* Usage Context Selection */}
               <div>
@@ -691,10 +711,11 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
                           type="button"
                           onClick={() => handleChange('contentFocus', focus.id)}
                           className={`p-2.5 rounded-lg border-2 text-left transition-all duration-200 ${
-                            formData.contentFocus === focus.id
-                              ? 'border-primary bg-primary/10 shadow-sm scale-105'
+                            formData.contentFocus.includes(focus.id)
+                              ? 'border-primary bg-primary/10 shadow-sm'
                               : 'border-border hover:border-primary/50'
                           }`}
+
                           disabled={isLoading}
                         >
                           <div className="flex items-start gap-2">
@@ -705,9 +726,10 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
                               <span className="text-xs font-medium block">{focus.label}</span>
                               <span className="text-[10px] text-muted-foreground mt-0.5 block">{focus.description}</span>
                             </div>
-                            {formData.contentFocus === focus.id && (
+                            {formData.contentFocus.includes(focus.id) && (
                               <Check className="h-3 w-3 text-primary flex-shrink-0" />
                             )}
+
                           </div>
                         </button>
                       );

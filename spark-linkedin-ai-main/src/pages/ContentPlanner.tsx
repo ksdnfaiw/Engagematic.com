@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Sparkles, Lock, Plus, Calendar, Target } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Lock, Plus, Calendar, Target, Bell } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { ReminderSettingsModal } from "@/components/planner/ReminderSettingsModal";
+
 import { PlannerStep1Goal } from "@/components/planner/PlannerStep1Goal";
 import { PlannerStep2Context } from "@/components/planner/PlannerStep2Context";
 import { PlannerStep3Config } from "@/components/planner/PlannerStep3Config";
@@ -101,6 +103,8 @@ export const ContentPlanner = () => {
     contentMix: []
   });
   const [board, setBoard] = useState<PlannerBoard | null>(null);
+  const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
+
 
   const fetchPlans = useCallback(async () => {
     setPlansLoading(true);
@@ -293,7 +297,7 @@ export const ContentPlanner = () => {
               Your saved plans and ideas. Open a plan to edit or generate posts from it.
             </p>
           </div>
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-8 gap-3">
             <Button
               onClick={handleCreateNewPlan}
               className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600"
@@ -301,7 +305,16 @@ export const ContentPlanner = () => {
               <Plus className="h-4 w-4" />
               Create new plan
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => setIsReminderModalOpen(true)}
+              className="gap-2"
+            >
+              <Bell className="h-4 w-4" />
+              Reminders
+            </Button>
           </div>
+
           {plansLoading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -349,7 +362,12 @@ export const ContentPlanner = () => {
             <ArrowLeft className="h-4 w-4" />
             Back to dashboard
           </Button>
+          <Button variant="outline" size="sm" onClick={() => setIsReminderModalOpen(true)} className="gap-2">
+            <Bell className="h-4 w-4" />
+            Reminders
+          </Button>
         </div>
+
         {/* Header */}
         <div className="text-center mb-8 space-y-3">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gradient-premium-world-class">
@@ -449,8 +467,14 @@ export const ContentPlanner = () => {
           </div>
         )}
       </div>
+
+      <ReminderSettingsModal 
+        isOpen={isReminderModalOpen} 
+        onClose={() => setIsReminderModalOpen(false)} 
+      />
     </div>
   );
 };
+
 
 export default ContentPlanner;

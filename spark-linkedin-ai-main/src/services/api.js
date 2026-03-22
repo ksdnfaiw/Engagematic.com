@@ -800,6 +800,30 @@ class ApiClient {
     });
   }
 
+  // Feedback methods
+  async submitFeedback(feedbackData) {
+    return this.request("/feedback", {
+      method: "POST",
+      body: JSON.stringify(feedbackData),
+    });
+  }
+
+  async getFeedback(targetId) {
+    return this.request(`/feedback/${targetId}`);
+  }
+
+  // Email preference methods
+  async getEmailPreferences() {
+    return this.request("/email/my-preferences");
+  }
+
+  async updateEmailPreferences(preferencesData) {
+    return this.request("/email/my-preferences", {
+      method: "POST",
+      body: JSON.stringify(preferencesData),
+    });
+  }
+
   // Payment methods
   async createCreditOrder(orderData) {
     return this.request("/payment/create-credit-order", {

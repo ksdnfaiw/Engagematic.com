@@ -1289,8 +1289,12 @@ JSON ONLY.`;
 
     // Analyze user profile for goal inference
     if (userProfile) {
-      const goals = userProfile.goals?.toLowerCase() || "";
-      const targetAudience = userProfile.targetAudience?.toLowerCase() || "";
+      const goals = Array.isArray(userProfile.goals) 
+        ? userProfile.goals.join(", ").toLowerCase() 
+        : (userProfile.goals?.toLowerCase() || "");
+      const targetAudience = Array.isArray(userProfile.targetAudience)
+        ? userProfile.targetAudience.join(", ").toLowerCase()
+        : (userProfile.targetAudience?.toLowerCase() || "");
       const experience = userProfile.experience?.toLowerCase() || persona?.experience?.toLowerCase() || "";
 
       // Job seeker / Entry level

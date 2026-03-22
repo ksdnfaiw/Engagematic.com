@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Content Planner Reminder</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .content h2 {
+            color: #333333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .content p {
+            color: #666666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+
+        .plan-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .plan-box h3 {
+            color: #667eea;
+            margin-top: 0;
+            font-size: 18px;
+        }
+
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            color: #999999;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Content Planner Reminder</h1>
+        </div>
+
+        <div class="content">
+            <h2>Hi <%= name %>,</h2>
+
+            <p>This is a friendly reminder to check your content schedule for today!</p>
+
+            <div class="plan-box">
+                <h3>Your Schedule Highlights:</h3>
+                <p>You have items planned for today in your Content Planner.</p>
+                <p>Don't let your LinkedIn presence fade! Use Engagematic to generate your scheduled posts in seconds.</p>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="<%= plannerUrl %>" class="cta-button">
+                    View My Planner
+                </a>
+            </div>
+
+            <p>Consistency is key to building your personal brand on LinkedIn. We're here to make it easy for you.</p>
+
+            <p style="margin-top: 30px;">Best regards,<br><strong>The Engagematic Team</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; <%= currentYear %> Engagematic. All rights reserved.</p>
+            <p>
+                <a href="<%= preferencesUrl %>">Email Preferences</a> |
+                <a href="<%= unsubscribeUrl %>">Unsubscribe</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

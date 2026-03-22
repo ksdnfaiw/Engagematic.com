@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Lightbulb, Sparkles, ArrowRight, Loader2, TrendingUp, MessageSquare, List, Laugh, BookOpen, Eye, Zap } from "lucide-react";
+import { Lightbulb, Sparkles, ArrowRight, Loader2, TrendingUp, MessageSquare, List, Laugh, BookOpen, Eye, Zap, Lock } from "lucide-react";
+import { FeedbackRow } from "@/components/FeedbackRow";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +16,7 @@ import { PremiumWaitlistModal } from "@/components/PremiumWaitlistModal";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UpgradePopup } from "@/components/UpgradePopup";
 import { TestimonialPopup } from "@/components/TestimonialPopup";
+import { PremiumUpgradeNotification } from "@/components/PremiumUpgradeNotification";
 import apiClient from "@/services/api";
 
 // Content angles with icons
@@ -81,12 +83,19 @@ const IdeaGenerator = () => {
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [showUpgradePopup, setShowUpgradePopup] = useState(false);
   const [showTestimonialPopup, setShowTestimonialPopup] = useState(false);
-  const testimonialTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const testimonialTimeoutRef = useRef<any>(null);
+  const [showPremiumUpgrade, setShowPremiumUpgrade] = useState(false);
+  const [premiumFeatureName, setPremiumFeatureName] = useState("");
 
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { subscription, canPerformAction, fetchSubscription } = useSubscription();
   const navigate = useNavigate();
+
+  const handleUpgradeClick = (featureName: string) => {
+    setPremiumFeatureName(featureName);
+    setShowPremiumUpgrade(true);
+  };
 
   // Cleanup testimonial timeout on unmount
   useEffect(() => {
@@ -305,6 +314,10 @@ const IdeaGenerator = () => {
                       <button
                         key={angle.value}
                         onClick={() => {
+                          if (angle.value === "custom" && subscription?.plan === "trial") {
+                            handleUpgradeClick("Custom Angles");
+                            return;
+                          }
                           setSelectedAngle(angle.value);
                           if (angle.value !== "custom") {
                             setCustomAngle(""); // Clear custom angle when switching
@@ -317,7 +330,12 @@ const IdeaGenerator = () => {
                         }`}
                       >
                         <Icon className="h-5 w-5 mb-2 text-primary" />
-                        <div className="text-sm font-medium mb-1">{angle.label}</div>
+                        <div className="text-sm font-medium mb-1 flex items-center gap-2">
+                          {angle.label}
+                          {angle.value === "custom" && subscription?.plan === "trial" && (
+                            <Lock className="h-3 w-3 text-muted-foreground" />
+                          )}
+                        </div>
                         <div className="text-xs text-muted-foreground">{angle.description}</div>
                       </button>
                     );
@@ -545,13 +563,21 @@ const IdeaGenerator = () => {
                       </div>
 
                       {/* Best For */}
-                      <div className="mt-3 pt-3 border-t">
-                        <div className="text-xs text-muted-foreground">
-                          <span className="font-semibold">Best for:</span> {idea.bestFor.length > 20 ? `${idea.bestFor.substring(0, 20)}...` : idea.bestFor}
-                        </div>
+                      <div className="text-xs text-muted-foreground">
+                        <span className="font-semibold">Best for:</span> {idea.bestFor.length > 20 ? `${idea.bestFor.substring(0, 20)}...` : idea.bestFor}
+                      </div>
+
+                      {/* User Feedback */}
+                      <div className="mt-3 pt-3 border-t" onClick={(e) => e.stopPropagation()}>
+                        <FeedbackRow 
+                          targetId={idea.id} 
+                          targetType="idea" 
+                          source="idea_generator" 
+                        />
                       </div>
                     </div>
                   </Card>
+
                 ))}
               </div>
 
@@ -586,6 +612,12 @@ const IdeaGenerator = () => {
         open={showTestimonialPopup}
         onOpenChange={setShowTestimonialPopup}
         contentType="idea"
+      />
+
+      <PremiumUpgradeNotification
+        isVisible={showPremiumUpgrade}
+        onClose={() => setShowPremiumUpgrade(false)}
+        featureName={premiumFeatureName}
       />
     </div>
   );

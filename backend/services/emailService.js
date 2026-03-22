@@ -114,7 +114,9 @@ class EmailService {
         upgrade_prompt: "upgradePrompts",
         payment_failed: "transactional",
         feature_update: "featureUpdates",
+        planner_reminder: "plannerReminders",
       };
+
 
       const category = emailTypeMap[emailType] || "marketing";
       return preference.preferences[category] !== false;
@@ -720,7 +722,22 @@ class EmailService {
       emailType: "usage_limit_warning",
     });
   }
+
+  async sendContentPlannerReminderEmail(user) {
+    return this.sendEmail({
+      userId: user._id,
+      to: user.email,
+      subject: "📅 Your LinkedIn Content Plan Reminder",
+      templateName: "planner_reminder",
+      templateData: {
+        name: user.name || "there",
+        plannerUrl: `${config.FRONTEND_URL}/planner`,
+      },
+      emailType: "planner_reminder",
+    });
+  }
 }
+
 
 // Export singleton instance
 const emailService = new EmailService();
