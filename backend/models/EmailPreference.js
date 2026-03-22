@@ -56,6 +56,12 @@ const emailPreferenceSchema = new mongoose.Schema(
         type: Boolean,
         default: true,
       },
+      plannerReminders: {
+        enabled: { type: Boolean, default: false },
+        time: { type: String, default: "09:00" }, // HH:mm format
+        frequency: { type: String, enum: ["daily", "weekly", "weekdays"], default: "daily" },
+        lastSentAt: { type: Date },
+      },
     },
     // Unsubscribe token for secure links
     unsubscribeToken: {

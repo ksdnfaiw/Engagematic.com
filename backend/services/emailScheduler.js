@@ -37,6 +37,8 @@ class EmailScheduler {
     this.scheduleSubscriptionRenewalReminders();
     this.scheduleUsageLimitWarnings();
     this.scheduleChurnPrevention();
+    this.scheduleContentPlannerReminders();
+
 
     this.isRunning = true;
     console.log("✅ Email scheduler started successfully");
@@ -651,6 +653,77 @@ class EmailScheduler {
     this.jobs.push(job);
     console.log("✅ Churn prevention emails scheduled (daily at 2 PM)");
   }
+
+  /**
+   * Schedule content planner reminders
+   * Runs every 15 minutes to check who needs a reminder
+   */
+  scheduleContentPlannerReminders() {
+    const job = cron.schedule("*/15 * * * *", async () => {
+      console.log("🔄 Running content planner reminder check...");
+
+      try {
+        const now = new Date();
+        const currentHour = now.getUTCHours();
+        const currentMinute = now.getUTCMinutes();
+        const currentDay = now.getUTCDay(); // 0=Sunday, 1=Monday...
+
+        // Find users with reminders enabled
+        const preferences = await EmailPreference.find({
+          "preferences.plannerReminders.enabled": true,
+        }).populate("userId");
+
+        for (const pref of preferences) {
+          if (!pref.userId || !pref.userId.isActive) continue;
+
+          const reminderCfg = pref.preferences.plannerReminders;
+          const [remHour, remMin] = reminderCfg.time.split(":").map(Number);
+
+          // Check if it's approximately the right time (within 15 min window)
+          // Note: This matches UTC. Frontend will need to store time in UTC or we handle offset.
+          // For simplicity, we'll assume UTC for now or handle user timezone if available.
+          // User model doesn't seem to have timezone. We'll use UTC comparison.
+          
+          const isTimeMatch = currentHour === remHour && Math.abs(currentMinute - remMin) < 15;
+          if (!isTimeMatch) continue;
+
+          // Check frequency
+          let isDayMatch = false;
+          if (reminderCfg.frequency === "daily") isDayMatch = true;
+          else if (reminderCfg.frequency === "weekdays") isDayMatch = currentDay >= 1 && currentDay <= 5;
+          else if (reminderCfg.frequency === "weekly") isDayMatch = currentDay === 1; // Default to Monday for weekly
+
+          if (!isDayMatch) continue;
+
+          // Check if already sent today
+          const lastSent = reminderCfg.lastSentAt;
+          const alreadySentToday = lastSent && 
+            new Date(lastSent).getUTCDate() === now.getUTCDate() &&
+            new Date(lastSent).getUTCMonth() === now.getUTCMonth();
+
+          if (alreadySentToday) continue;
+
+          try {
+            await emailService.sendContentPlannerReminderEmail(pref.userId);
+            
+            // Update lastSentAt
+            pref.preferences.plannerReminders.lastSentAt = now;
+            await pref.save();
+            
+            console.log(`✅ Sent planner reminder to ${pref.userId.email}`);
+          } catch (error) {
+            console.error(`Error sending planner reminder to ${pref.userId.email}:`, error);
+          }
+        }
+      } catch (error) {
+        console.error("Error in content planner reminder job:", error);
+      }
+    });
+
+    this.jobs.push(job);
+    console.log("✅ Content planner reminders scheduled (every 15 minutes)");
+  }
+
 
   /**
    * Get scheduler status

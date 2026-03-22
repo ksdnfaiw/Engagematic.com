@@ -200,14 +200,16 @@ const userSchema = new mongoose.Schema(
         type: String,
         default: null,
       },
-      goals: {
-        type: String,
-        default: null,
-      },
-      contentFocus: {
-        type: String,
-        default: null,
-      },
+      goals: [
+        {
+          type: String,
+        },
+      ],
+      contentFocus: [
+        {
+          type: String,
+        },
+      ],
       contentTypes: [
         {
           type: String,

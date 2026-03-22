@@ -21,6 +21,8 @@ import { PremiumWaitlistModal } from "@/components/PremiumWaitlistModal";
 import { UpgradePopup } from "@/components/UpgradePopup";
 import { TestimonialPopup } from "@/components/TestimonialPopup";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { FeedbackRow } from "@/components/FeedbackRow";
+import { PremiumUpgradeNotification } from "@/components/PremiumUpgradeNotification";
 
 const hookIcons = {
   story: Heart,
@@ -54,9 +56,11 @@ const PostGenerator = () => {
   const [waitlistSource, setWaitlistSource] = useState("post-generator");
   const [showUpgradePopup, setShowUpgradePopup] = useState(false);
   const [showTestimonialPopup, setShowTestimonialPopup] = useState(false);
-  const testimonialTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const testimonialTimeoutRef = useRef<any>(null);
   const [isShortened, setIsShortened] = useState(false);
   const [shortenedContent, setShortenedContent] = useState("");
+  const [showPremiumUpgrade, setShowPremiumUpgrade] = useState(false);
+  const [premiumFeatureName, setPremiumFeatureName] = useState("");
   
   // SIMPLIFIED: Just use sample personas directly, no complex creation logic
   const { personas, samplePersonas, isLoading: personasLoading } = usePersonas();
@@ -145,18 +149,9 @@ const PostGenerator = () => {
     setShortenedContent("");
   };
 
-      const handleUpgradeClick = (source: string) => {
-        // Redirect to pricing section for premium features
-        if (window.location.pathname === '/') {
-          const pricingSection = document.getElementById('pricing');
-          pricingSection?.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          navigate('/#pricing');
-        }
-    toast({
-      title: "Upgrade Required",
-      description: "This feature is available in our premium plans. Choose a plan to continue.",
-    });
+  const handleUpgradeClick = (featureName: string) => {
+    setPremiumFeatureName(featureName);
+    setShowPremiumUpgrade(true);
   };
 
   // Handle pre-filled content from Idea Generator
@@ -660,11 +655,11 @@ const PostGenerator = () => {
                   )}
                 </div>
                 <Select 
-                  value={selectedPersona?.name || selectedPersona?._id || selectedPersona?.id} 
+                  value={selectedPersona?._id || selectedPersona?.id} 
                   onValueChange={(value) => {
                     // Find persona from either user personas or expanded personas
                     const allPersonas = [...personas, ...EXPANDED_PERSONAS];
-                    const found = allPersonas.find(p => p.name === value || p._id === value || p.id === value);
+                    const found = allPersonas.find(p => (p._id || p.id) === value);
                     if (found) setSelectedPersona(found);
                   }}
                 >
@@ -858,6 +853,15 @@ const PostGenerator = () => {
                         <Badge variant="default" className="text-sm">{generatedContent.engagementScore}/100</Badge>
                       </div>
                     )}
+
+                    {/* Feedback Row */}
+                    <div className="pb-2 border-b">
+                      <FeedbackRow 
+                        targetId={generatedContent._id} 
+                        targetType="post" 
+                        source="post_generator" 
+                      />
+                    </div>
 
                     {/* LinkedIn Optimizer */}
                     <LinkedInOptimizer 
@@ -1080,6 +1084,12 @@ const PostGenerator = () => {
         open={showTestimonialPopup}
         onOpenChange={setShowTestimonialPopup}
         contentType="post"
+      />
+
+      <PremiumUpgradeNotification
+        isVisible={showPremiumUpgrade}
+        onClose={() => setShowPremiumUpgrade(false)}
+        featureName={premiumFeatureName}
       />
     </div>
   );
