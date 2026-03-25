@@ -223,10 +223,21 @@ class ApiClient {
   }
 
   async googleAuth(tokenOrCode, referralCode, redirectUri) {
-    const isCode = tokenOrCode && tokenOrCode.length > 100;
-    const body = isCode
-      ? { code: tokenOrCode, redirect_uri: redirectUri, referralCode }
-      : { access_token: tokenOrCode, referralCode };
+    const token =
+      typeof tokenOrCode === "string" ? tokenOrCode.trim() : "";
+    // ID token (JWT) from One Tap / GoogleLogin — three dot-separated segments.
+    const looksLikeJwt =
+      /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(token);
+    // Redirect flow (GoogleCallback) always passes redirectUri with the auth *code*.
+    // Do not use token length: Google codes are often < 100 chars but are not access tokens.
+    let body;
+    if (looksLikeJwt) {
+      body = { credential: token, referralCode };
+    } else if (redirectUri) {
+      body = { code: token, redirect_uri: redirectUri, referralCode };
+    } else {
+      body = { access_token: token, referralCode };
+    }
 
     const response = await this.request("/auth/google", {
       method: "POST",
