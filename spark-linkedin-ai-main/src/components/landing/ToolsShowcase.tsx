@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Brain, MessageSquare, Sparkles, Calendar } from "lucide-react";
+import { Brain, MessageSquare, Sparkles, Calendar, FileVideo } from "lucide-react";
 
 const tools = [
   {
@@ -29,6 +29,13 @@ const tools = [
     description: "Turn your monthly goal into a clear 30-post board with hooks, CTAs, and comment prompts that drive DMs and leads—not vanity likes.",
     color: "from-green-500 via-emerald-500 to-teal-500",
     shadowColor: "shadow-green-500/25"
+  },
+  {
+    icon: FileVideo,
+    title: "Free Video Transcript Generator",
+    description: "Instantly convert YouTube, Instagram Reels, TikTok, X, Facebook videos, or local files into clean, ready-to-use text you can turn into LinkedIn posts.",
+    color: "from-cyan-500 via-blue-500 to-indigo-500",
+    shadowColor: "shadow-cyan-500/25"
   }
 ];
 
