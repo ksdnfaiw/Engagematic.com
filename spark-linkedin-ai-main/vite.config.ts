@@ -12,6 +12,14 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: true, // Show errors in browser so blank page is debuggable
     },
+    proxy: {
+      // Forward all /api/* requests to the Express backend
+      "/api": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   plugins: [
     react(),

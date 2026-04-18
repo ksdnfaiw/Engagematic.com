@@ -37,6 +37,7 @@ import couponRoutes from "./routes/coupons.js";
 import profileCoachRoutes from "./routes/profileCoach.js";
 import contentPlanRoutes from "./routes/contentPlan.js";
 import feedbackRoutes from "./routes/feedback.js";
+import transcriptRoutes from "./routes/transcript.js";
 
 
 // Import services
@@ -223,6 +224,7 @@ app.use("/api/coupons", couponRoutes); // Coupon management and validation
 app.use("/api/profile-coach", profileCoachRoutes); // LinkedInPulse Profile Coach (NEW - Testing)
 app.use("/api/content-plans", contentPlanRoutes); // Content Planner - saved plans
 app.use("/api/feedback", feedbackRoutes); // User feedback for ideas and posts
+app.use("/api/transcript", transcriptRoutes); // Free video transcript generator (Supadata)
 console.log("✅ Profile Coach routes registered at /api/profile-coach");
 
 

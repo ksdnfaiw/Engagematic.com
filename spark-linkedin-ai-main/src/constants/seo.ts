@@ -264,6 +264,13 @@ export const PAGE_SEO = {
     keywords: 'linkedin text formatter, linkedin bold text, linkedin italic text, linkedin text formatter free, format linkedin post, linkedin unicode text, linkedin post formatter, linkedin bold text generator, linkedin italic text generator, linkedin text formatting, linkedin bold font, linkedin italic font, linkedin underline text, linkedin strikethrough text, linkedin text style, linkedin post formatting, linkedin text formatter tool, linkedin text formatter free online, linkedin bold text converter, linkedin text editor, linkedin post text formatter, linkedin message formatter, linkedin text formatting tool',
     canonical: `${SITE_URL}/tools/linkedin-text-formatter`
   },
+
+  videoTranscriptTool: {
+    title: 'Free Video Transcript Generator – YouTube, MP4 & More | Engagematic',
+    description: 'Convert any video to text instantly. Paste a YouTube link, public MP4 URL, or upload a video file. Get a clean transcript in seconds. 100% free, no signup required.',
+    keywords: 'free video transcript generator, video to text free, youtube transcript generator, mp4 to text, video transcription online free, transcribe video free, video to text converter, youtube video to text, free transcription tool, video transcript maker, online video transcriber, ai transcription free, video caption generator, convert video to text, speech to text from video',
+    canonical: `${SITE_URL}/tools/video-transcript-generator`
+  },
   
   ideaGenerator: {
     title: 'Free LinkedIn Idea Generator - Viral Post Ideas | Engagematic',
