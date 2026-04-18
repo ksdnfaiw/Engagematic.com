@@ -29,6 +29,7 @@ const LinkedInProfileAnalyzerTool = lazy(() => import("./pages/tools/LinkedInPro
 const LinkedInPostGeneratorTool = lazy(() => import("./pages/tools/LinkedInPostGeneratorTool"));
 const LinkedInEngagementCalculator = lazy(() => import("./pages/tools/LinkedInEngagementCalculator"));
 const LinkedInTextFormatter = lazy(() => import("./pages/tools/LinkedInTextFormatter"));
+const VideoTranscriptTool = lazy(() => import("./pages/tools/VideoTranscriptTool"));
 import { ErrorBoundary } from "./components/ErrorBoundary";
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
@@ -174,6 +175,7 @@ const App = () => (
                   <Route path="/tools/linkedin-post-generator" element={<LinkedInPostGeneratorTool />} />
                   <Route path="/tools/linkedin-engagement-rate-calculator" element={<LinkedInEngagementCalculator />} />
                   <Route path="/tools/linkedin-text-formatter" element={<ErrorBoundary><LinkedInTextFormatter /></ErrorBoundary>} />
+                  <Route path="/tools/video-transcript-generator" element={<VideoTranscriptTool />} />
                   
                   {/* Dashboard routes with onboarding modal */}
                   <Route element={<DashboardLayout />}>

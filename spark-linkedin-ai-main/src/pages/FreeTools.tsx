@@ -14,7 +14,8 @@ import {
   TrendingUp,
   Users,
   BarChart3,
-  Type
+  Type,
+  FileVideo
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -109,6 +110,24 @@ const freeTools = [
     keywords: "free linkedin idea generator, linkedin content ideas, linkedin post ideas, linkedin content inspiration",
     monthlySearches: "6,000+",
     color: "from-orange-500 to-amber-500"
+  },
+  {
+    id: "video-transcript",
+    name: "Free Video Transcript Generator",
+    description: "Convert any video to text instantly. Paste a YouTube link, public MP4 URL, or upload a file. Get a clean transcript in seconds — powered by AI.",
+    icon: FileVideo,
+    url: "/tools/video-transcript-generator",
+    features: [
+      "YouTube & public video URLs",
+      "File upload (MP4, MOV, WEBM)",
+      "12+ language support",
+      "Copy or download as .txt",
+      "In-memory caching for speed",
+      "No signup required"
+    ],
+    keywords: "free video transcript generator, video to text, youtube transcript, mp4 to text, video transcription free",
+    monthlySearches: "12,000+",
+    color: "from-cyan-500 to-blue-500"
   }
 ];
 
