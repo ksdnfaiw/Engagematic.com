@@ -1,8 +1,8 @@
 /**
- * Transcript Routes — Supadata-powered video transcript API
+ * Transcript Routes - Supadata-powered video transcript API
  * Endpoints:
- *   POST /api/transcript/url    — transcribe from public video URL
- *   POST /api/transcript/upload — transcribe from uploaded file
+ *   POST /api/transcript/url    - transcribe from public video URL
+ *   POST /api/transcript/upload - transcribe from uploaded file
  */
 
 import express from "express";
@@ -69,7 +69,7 @@ function checkAndIncrementRateLimit(ip) {
 }
 
 // ─────────────────────────────────────────────
-// Multer — for file uploads (max 100MB)
+// Multer - for file uploads (max 100MB)
 // ─────────────────────────────────────────────
 const uploadDir = path.join(__dirname, "..", "data", "uploads");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
@@ -117,7 +117,7 @@ async function fetchTranscriptFromSupadata(url, lang) {
       "x-api-key": SUPADATA_API_KEY,
       "Accept": "application/json",
     },
-    timeout: 120_000, // 2 minutes — video transcription can be slow
+    timeout: 120_000, // 2 minutes - video transcription can be slow
     validateStatus: null, // Handle all status codes manually
   });
 
@@ -142,7 +142,7 @@ async function fetchTranscriptFromSupadata(url, lang) {
     } else if (data && data.text) {
       transcriptText = data.text;
     } else if (data) {
-      // fallback — stringify whatever we got
+      // fallback - stringify whatever we got
       transcriptText = JSON.stringify(data);
     }
 
@@ -245,7 +245,7 @@ router.post("/url", async (req, res) => {
 
   const normalizedLang = (lang || "auto").toLowerCase().trim();
 
-  // Check cache first — skip rate limit for cached hits
+  // Check cache first - skip rate limit for cached hits
   const cacheKey = getCacheKey(normalized, normalizedLang);
   const cached = transcriptCache.get(cacheKey);
   if (cached) {

@@ -824,7 +824,7 @@ export const OnboardingModal = ({ isOpen, onComplete }: OnboardingModalProps) =>
 
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="aiVoiceDescription" className="text-xs font-medium">Describe your style (e.g. company context, audience, tone — up to ~1000 words)</Label>
+                  <Label htmlFor="aiVoiceDescription" className="text-xs font-medium">Describe your style (e.g. company context, audience, tone - up to ~1000 words)</Label>
                   <Textarea
                     id="aiVoiceDescription"
                     placeholder="Example: Direct, no fluff, slightly humorous, no emojis. I write for B2B SaaS founders and prefer practical, step-by-step posts. Our company does X; our audience is Y. Use this context for all generated content."

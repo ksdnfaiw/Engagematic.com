@@ -190,7 +190,7 @@ export const CreditSliderPricing = () => {
             </span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4">
-            Select posts, comments, and ideas—pay only for what you use. 
+            Select posts, comments, and ideas-pay only for what you use. 
             Plans and pricing auto-adjust for your region and currency.
           </p>
           

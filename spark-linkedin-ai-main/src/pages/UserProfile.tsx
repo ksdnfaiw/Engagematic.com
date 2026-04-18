@@ -681,7 +681,7 @@ export const UserProfile = () => {
 
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="aiVoiceDesc">Describe your style (company context, audience, tone — up to ~1000 words)</Label>
+                  <Label htmlFor="aiVoiceDesc">Describe your style (company context, audience, tone - up to ~1000 words)</Label>
                   <Textarea
                     id="aiVoiceDesc"
                     placeholder="Example: Direct, no fluff, slightly humorous, no emojis. I write for B2B SaaS founders and prefer practical, step-by-step posts. Our company does X; our audience is Y. Use this context for all generated content."

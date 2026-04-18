@@ -6,7 +6,7 @@ const features = [
   {
     icon: UserCircle,
     title: "Write Like Yourself, Not Like AI",
-    description: "Every post sounds authentically you. No robotic templates—just your natural voice, amplified.",
+    description: "Every post sounds authentically you. No robotic templates-just your natural voice, amplified.",
     gradient: "from-blue-500 via-purple-500 to-pink-500",
     shadowColor: "shadow-blue-500/20"
   },
@@ -20,14 +20,14 @@ const features = [
   {
     icon: BarChart3,
     title: "Insights You'll Actually Care About",
-    description: "Simple, actionable feedback on what's working—not overwhelming dashboards you'll never check.",
+    description: "Simple, actionable feedback on what's working-not overwhelming dashboards you'll never check.",
     gradient: "from-indigo-500 via-blue-500 to-cyan-500",
     shadowColor: "shadow-indigo-500/20"
   },
   {
     icon: Crown,
     title: "Your Voice, Sharpened",
-    description: "Teach Pulse your writing style. Your best posts, your instincts, your vibe—now on autopilot.",
+    description: "Teach Pulse your writing style. Your best posts, your instincts, your vibe-now on autopilot.",
     gradient: "from-pink-500 via-rose-500 to-orange-500",
     shadowColor: "shadow-pink-500/20"
   }
@@ -54,7 +54,7 @@ export const Features = () => {
             <span className="text-gradient-premium-world-class">What You Get</span>
           </h2>
           <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            Everything you need to sound like you—not like everyone else.
+            Everything you need to sound like you-not like everyone else.
           </p>
         </div>
 

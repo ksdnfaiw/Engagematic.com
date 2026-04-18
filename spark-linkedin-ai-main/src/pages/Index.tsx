@@ -29,7 +29,7 @@ const faqData = [
   },
   {
     question: "Can I try Engagematic before upgrading to Pro?",
-    answer: "Absolutely! Start with our free Starter plan to experience the power of AI-generated LinkedIn content. When you're ready for unlimited content and advanced features, upgrade to Pro with a 7-day free trial—no credit card required."
+    answer: "Absolutely! Start with our free Starter plan to experience the power of AI-generated LinkedIn content. When you're ready for unlimited content and advanced features, upgrade to Pro with a 7-day free trial-no credit card required."
   },
   {
     question: "How quickly can I start creating content?",

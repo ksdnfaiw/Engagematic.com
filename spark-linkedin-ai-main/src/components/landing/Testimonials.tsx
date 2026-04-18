@@ -23,7 +23,7 @@ const fallbackTestimonials: Testimonial[] = [
     displayName: "Priya S.",
     jobTitle: "Content Creator",
     rating: 5,
-    comment: "I've been testing Engagematic for 2 weeks. The persona feature actually learns my writing style—no more generic AI posts. Still experimenting, but early results are promising.",
+    comment: "I've been testing Engagematic for 2 weeks. The persona feature actually learns my writing style-no more generic AI posts. Still experimenting, but early results are promising.",
     createdAt: new Date().toISOString()
   },
   {

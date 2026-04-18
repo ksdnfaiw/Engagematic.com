@@ -242,7 +242,7 @@ export default function AffiliateProgram() {
                 Earn 10% Every Month, Forever
               </h2>
               <p className="text-xl mb-8 text-purple-100">
-                For every friend who subscribes, you earn <strong>10% of their monthly subscription</strong> — 
+                For every friend who subscribes, you earn <strong>10% of their monthly subscription</strong> - 
                 recurring every month they stay active. No limits, no caps.
               </p>
               

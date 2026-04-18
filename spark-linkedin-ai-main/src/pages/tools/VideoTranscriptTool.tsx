@@ -68,7 +68,7 @@ const faqData = [
   },
   {
     question: "Does it work with Instagram Reels and TikTok?",
-    answer: "Yes! Supadata's transcription engine supports Instagram Reels, TikTok videos, YouTube, X (Twitter), and Facebook videos — just paste the public URL and click Generate. Private or logged-in-only videos won't work.",
+    answer: "Yes! Supadata's transcription engine supports Instagram Reels, TikTok videos, YouTube, X (Twitter), and Facebook videos - just paste the public URL and click Generate. Private or logged-in-only videos won't work.",
   },
   {
     question: "Is this transcript tool really free?",
@@ -191,7 +191,7 @@ const VideoTranscriptTool = () => {
     if (file && validateFile(file)) setSelectedFile(file);
   };
 
-  // ── API call — URL mode ──
+  // ── API call - URL mode ──
   const transcribeUrl = async () => {
     if (!validateUrl(videoUrl)) return;
     setLoading(true);
@@ -217,13 +217,13 @@ const VideoTranscriptTool = () => {
       setIsPartial(data.partial || false);
       setIsCached(data.cached || false);
     } catch {
-      setError("Network error — please check your connection and try again.");
+      setError("Network error - please check your connection and try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // ── API call — Upload mode ──
+  // ── API call - Upload mode ──
   const transcribeUpload = async () => {
     if (!selectedFile) { setFileError("Please select a video file first."); return; }
     if (!validateFile(selectedFile)) return;
@@ -253,7 +253,7 @@ const VideoTranscriptTool = () => {
       setIsPartial(data.partial || false);
       setIsCached(false);
     } catch {
-      setError("Network error — please check your connection and try again.");
+      setError("Network error - please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -325,7 +325,7 @@ const VideoTranscriptTool = () => {
               Free Video Transcript Generator
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-              Paste a link or upload a file. Get a clean, readable transcript in seconds — powered by AI.
+              Paste a link or upload a file. Get a clean, readable transcript in seconds - powered by AI.
             </p>
             {/* Platform badges */}
             <div className="flex flex-wrap items-center justify-center gap-2 mb-5">
@@ -660,19 +660,19 @@ const VideoTranscriptTool = () => {
                 icon: Globe,
                 gradient: "from-blue-500 to-indigo-500",
                 title: "6 Platforms Supported",
-                desc: "Paste links from YouTube, Instagram Reels, TikTok, X (Twitter), Facebook, or any public MP4/video URL — powered by Supadata AI.",
+                desc: "Paste links from YouTube, Instagram Reels, TikTok, X (Twitter), Facebook, or any public MP4/video URL - powered by Supadata AI.",
               },
               {
                 icon: Upload,
                 gradient: "from-purple-500 to-pink-500",
                 title: "File Upload Support",
-                desc: "Upload MP4, MOV, WEBM, AVI, or MKV files directly — up to 100MB. Perfect for unlisted or private recordings.",
+                desc: "Upload MP4, MOV, WEBM, AVI, or MKV files directly - up to 100MB. Perfect for unlisted or private recordings.",
               },
               {
                 icon: Zap,
                 gradient: "from-amber-500 to-orange-500",
                 title: "Fast & Accurate",
-                desc: "Powered by Supadata's AI — transcripts are ready in seconds for short clips, under 2 minutes for longer videos.",
+                desc: "Powered by Supadata's AI - transcripts are ready in seconds for short clips, under 2 minutes for longer videos.",
               },
               {
                 icon: FileText,
@@ -775,7 +775,7 @@ const VideoTranscriptTool = () => {
             A video transcript generator converts spoken audio from a video into written text automatically using AI-powered speech recognition. Our free tool uses Supadata's transcription engine to process public video URLs and uploaded video files, returning clean, readable text within seconds.
           </p>
           <p className="text-muted-foreground mb-6 leading-relaxed">
-            This is especially useful for content repurposing — turning a YouTube video, podcast recording, or webinar into blog posts, LinkedIn articles, or social media content without manual typing.
+            This is especially useful for content repurposing - turning a YouTube video, podcast recording, or webinar into blog posts, LinkedIn articles, or social media content without manual typing.
           </p>
           <h3 className="text-2xl font-bold mb-4">Who Should Use This Tool?</h3>
           <ul className="list-disc pl-5 space-y-2 text-muted-foreground text-sm mb-6">
