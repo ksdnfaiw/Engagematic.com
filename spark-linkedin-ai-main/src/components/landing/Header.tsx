@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { premiumCTAClasses, premiumCTAHighlight, premiumCTAIcon } from "@/styles/premiumButtons";
-import { Menu, Home, FileText, MessageSquare, Lightbulb, User, LogOut, ArrowRight, ChevronDown, BarChart3, Type } from "lucide-react";
+import { Menu, Home, FileText, MessageSquare, Lightbulb, User, LogOut, ArrowRight, ChevronDown, BarChart3, Type, FileVideo } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useState } from "react";
@@ -128,6 +128,12 @@ export const Header = () => {
                         <Link to="/tools/linkedin-text-formatter" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
                           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-purple-500/10"><Type className="h-4 w-4 text-purple-600 dark:text-purple-400" /></span>
                           <span className="font-medium">LinkedIn Text Formatter</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/tools/video-transcript-generator" className="flex items-center gap-3 rounded-lg py-2.5 px-3 cursor-pointer hover:bg-primary/5 focus:bg-primary/5 outline-none">
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10"><FileVideo className="h-4 w-4 text-cyan-600 dark:text-cyan-400" /></span>
+                          <span className="font-medium">Video Transcript Generator</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
@@ -297,6 +303,14 @@ export const Header = () => {
                           >
                             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-500/10"><Type className="h-4 w-4 text-purple-600 dark:text-purple-400" /></span>
                             LinkedIn Text Formatter
+                          </Link>
+                          <Link 
+                            to="/tools/video-transcript-generator"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center gap-3 rounded-lg py-2.5 px-3 text-sm text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors"
+                          >
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10"><FileVideo className="h-4 w-4 text-cyan-600 dark:text-cyan-400" /></span>
+                            Video Transcript Generator
                           </Link>
                           <Link 
                             to="/#free-generator"
