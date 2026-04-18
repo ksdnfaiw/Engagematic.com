@@ -1787,7 +1787,7 @@ ${angleInstruction}
 5. Use specific numbers, details, and concrete examples
 6. Make hooks that create curiosity, controversy, emotion, or utility
 
-**HOOK ARCHITECTURE (NON-NEGOTIABLE — 80% of performance is the hook):**
+**HOOK ARCHITECTURE (NON-NEGOTIABLE - 80% of performance is the hook):**
 - Treat the first 1–2 lines (the **Hook**) as 80% of the post's performance.
 - Every idea MUST start from a strong hook that fits one or more of these 8 archetypes:
 

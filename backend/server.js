@@ -47,7 +47,7 @@ import affiliateScheduler from "./services/affiliateScheduler.js";
 
 const app = express();
 
-// Security middleware — CSP enabled conditionally
+// Security middleware - CSP enabled conditionally
 app.use(
   helmet({
     contentSecurityPolicy: config.NODE_ENV === "production" ? {

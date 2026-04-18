@@ -127,7 +127,7 @@ const AboutPage = () => {
                   Engagematic was founded by a team of marketing professionals who struggled with creating consistent, engaging LinkedIn content. We spent hours crafting posts that barely got any engagement, while watching others effortlessly build massive followings.
                 </p>
                 <p className="text-sm sm:text-base lg:text-lg text-muted-foreground mb-4 sm:mb-6 break-words">
-                  We realized that the problem wasn't lack of expertise—it was lack of time, consistency, and the right tools. That's when we decided to build Engagematic: a platform that combines AI efficiency with human authenticity.
+                  We realized that the problem wasn't lack of expertise-it was lack of time, consistency, and the right tools. That's when we decided to build Engagematic: a platform that combines AI efficiency with human authenticity.
                 </p>
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-2 sm:gap-3">

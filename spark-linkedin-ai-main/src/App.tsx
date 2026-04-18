@@ -51,7 +51,7 @@ const BlogPage = lazy(() => import("./pages/BlogPage"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
 const PostDetailPage = lazy(() => import("./pages/PostDetailPage"));
 const PricingRedirect = lazy(() => import("./pages/PricingRedirect"));
-// Admin Pages — lazy loaded (only accessed by admins, saves ~80KB from main bundle)
+// Admin Pages - lazy loaded (only accessed by admins, saves ~80KB from main bundle)
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const UserManagement = lazy(() => import("./pages/admin/UserManagement"));
@@ -66,8 +66,8 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes — avoid unnecessary refetches
-      gcTime: 10 * 60 * 1000, // 10 minutes — keep cache in memory
+      staleTime: 5 * 60 * 1000, // 5 minutes - avoid unnecessary refetches
+      gcTime: 10 * 60 * 1000, // 10 minutes - keep cache in memory
       retry: 2, // Retry failed requests twice
       refetchOnWindowFocus: false, // Don't refetch when user switches tabs
     },

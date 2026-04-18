@@ -26,7 +26,7 @@ const tools = [
   {
     icon: Calendar,
     title: "Hook-to-Outcome Content Planner",
-    description: "Turn your monthly goal into a clear 30-post board with hooks, CTAs, and comment prompts that drive DMs and leads—not vanity likes.",
+    description: "Turn your monthly goal into a clear 30-post board with hooks, CTAs, and comment prompts that drive DMs and leads-not vanity likes.",
     color: "from-green-500 via-emerald-500 to-teal-500",
     shadowColor: "shadow-green-500/25"
   },

@@ -187,7 +187,7 @@ router.post("/register", validateUserRegistration, async (req, res) => {
   }
 });
 
-// Google OAuth — verify token, create or log in user
+// Google OAuth - verify token, create or log in user
 router.post("/google", async (req, res) => {
   try {
     const { credential, access_token, tokenOrCode, redirect_uri, referralCode } = req.body;
@@ -213,7 +213,7 @@ router.post("/google", async (req, res) => {
     let googleId, email, name, picture;
 
     if (code) {
-      // Exchange authorization code for tokens (redirect flow — works on all devices)
+      // Exchange authorization code for tokens (redirect flow - works on all devices)
       if (!config.GOOGLE_CLIENT_SECRET) {
         console.error("GOOGLE_CLIENT_SECRET is not set on the server");
         return res.status(500).json({
@@ -310,7 +310,7 @@ router.post("/google", async (req, res) => {
     let isNewUser = false;
 
     if (user) {
-      // Existing user — link Google account if they signed up with email/password
+      // Existing user - link Google account if they signed up with email/password
       if (!user.googleId) {
         user.googleId = googleId;
         user.authProvider = user.authProvider === "local" ? "local" : "google";
@@ -324,7 +324,7 @@ router.post("/google", async (req, res) => {
         { lastLoginAt: new Date() }
       ).catch((err) => console.error("Failed to update lastLoginAt:", err));
     } else {
-      // New user — create account
+      // New user - create account
       isNewUser = true;
       user = new User({
         name: name || email.split("@")[0],

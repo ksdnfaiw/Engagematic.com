@@ -173,7 +173,7 @@ const LinkedInProfileAnalyzerTool = () => {
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Get instant AI-powered analysis of your LinkedIn profile. Discover your profile score, 
-              receive personalized optimization tips, and boost your visibility—all completely free.
+              receive personalized optimization tips, and boost your visibility-all completely free.
             </p>
           </div>
 

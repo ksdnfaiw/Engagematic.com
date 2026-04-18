@@ -106,7 +106,7 @@ export default function AffiliateDashboard() {
         return;
       }
 
-      // Core stats — must succeed
+      // Core stats - must succeed
       const statsResponse = await api.getAffiliateDashboardStats();
       if (!statsResponse.success) {
         throw new Error(statsResponse.message || "Failed to load stats");
@@ -114,7 +114,7 @@ export default function AffiliateDashboard() {
       setAffiliate(statsResponse.data.affiliate);
       setStats(statsResponse.data.stats);
 
-      // Commissions — non-blocking
+      // Commissions - non-blocking
       setCommissionsError(false);
       try {
         const commissionsResponse = await api.getAffiliateCommissions(1, 50);
@@ -127,7 +127,7 @@ export default function AffiliateDashboard() {
         setCommissionsError(true);
       }
 
-      // Referrals — non-blocking
+      // Referrals - non-blocking
       setReferralsError(false);
       try {
         const referralsResponse = await api.getAffiliateReferrals();
@@ -182,7 +182,7 @@ export default function AffiliateDashboard() {
 
   const shareOnSocial = (platform: string) => {
     const url = affiliate?.referralLink || "";
-    const text = "I'm using Engagematic to grow my LinkedIn — you should try it! 🚀";
+    const text = "I'm using Engagematic to grow my LinkedIn - you should try it! 🚀";
     const urls: Record<string, string> = {
       twitter:  `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
@@ -257,7 +257,7 @@ export default function AffiliateDashboard() {
                                <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />}
                 <div>
                   <p className="font-semibold text-gray-900 text-sm">
-                    {isPending   ? "Application under review — usually takes 24–48 hours" :
+                    {isPending   ? "Application under review - usually takes 24–48 hours" :
                      isRejected  ? "Application not approved" :
                                    "Account suspended"}
                   </p>
@@ -436,7 +436,7 @@ export default function AffiliateDashboard() {
                               </div>
                               <div className="text-xs text-gray-500 flex items-center gap-1.5">
                                 <Calendar className="w-3 h-3" />
-                                {commission.commissionPeriod || "—"}
+                                {commission.commissionPeriod || "-"}
                                 {commission.plan && <span>• {commission.plan}</span>}
                               </div>
                             </div>
@@ -516,7 +516,7 @@ export default function AffiliateDashboard() {
                                 <Calendar className="w-3 h-3" />
                                 {joinedDate
                                   ? new Date(joinedDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
-                                  : "—"}
+                                  : "-"}
                               </div>
                             </div>
                           </div>
@@ -543,7 +543,7 @@ export default function AffiliateDashboard() {
                 <p className="text-sm font-semibold text-purple-900">Pro tip: LinkedIn posts convert best</p>
                 <p className="text-xs text-purple-700 mt-0.5">
                   Affiliates who share their link in LinkedIn posts earn 3× more than those who only use email.
-                  Tell your audience what Engagematic helped you achieve — personal stories outperform generic promotions.
+                  Tell your audience what Engagematic helped you achieve - personal stories outperform generic promotions.
                 </p>
               </div>
             </div>

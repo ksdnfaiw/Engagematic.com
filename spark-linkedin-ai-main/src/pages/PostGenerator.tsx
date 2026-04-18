@@ -489,7 +489,7 @@ const PostGenerator = () => {
                         Free: Engagement Rate Calculator
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Measure rate, benchmarks & post score — no login.
+                        Measure rate, benchmarks & post score - no login.
                       </p>
                     </div>
                   </div>
@@ -514,7 +514,7 @@ const PostGenerator = () => {
                         Free: LinkedIn Text Formatter
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Bold, italic, lists for posts — copy & paste. No login.
+                        Bold, italic, lists for posts - copy & paste. No login.
                       </p>
                     </div>
                   </div>
@@ -924,7 +924,7 @@ const PostGenerator = () => {
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>{isShortened ? "Restore original content" : "Make it crisp—perfect for busy feeds!"}</p>
+                              <p>{isShortened ? "Restore original content" : "Make it crisp-perfect for busy feeds!"}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>

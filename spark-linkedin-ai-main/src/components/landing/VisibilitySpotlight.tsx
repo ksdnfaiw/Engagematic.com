@@ -4,25 +4,25 @@ const highlights = [
   {
     icon: Eye,
     label: "Visibility",
-    text: "Ace your LinkedIn visibility for dream jobs & placements—no faking, just results.",
+    text: "Ace your LinkedIn visibility for dream jobs & placements-no faking, just results.",
     delay: "",
   },
   {
     icon: Sparkles,
     label: "Content",
-    text: "Stand out with scroll-stopping posts and carousels—crafted in minutes, not hours.",
+    text: "Stand out with scroll-stopping posts and carousels-crafted in minutes, not hours.",
     delay: "animation-delay-200",
   },
   {
     icon: PenSquare,
     label: "Brand",
-    text: "Level-up your profile and personal brand—look impressive instantly.",
+    text: "Level-up your profile and personal brand-look impressive instantly.",
     delay: "animation-delay-400",
   },
   {
     icon: Rocket,
     label: "Momentum",
-    text: "Tools that work—ditch the generic, get real engagement fast.",
+    text: "Tools that work-ditch the generic, get real engagement fast.",
     delay: "animation-delay-600",
   },
 ];

@@ -340,7 +340,7 @@ export const ContentPlanner = () => {
                     <div className="min-w-0">
                       <p className="font-medium truncate">{plan.title || `Plan ${new Date(plan.updatedAt || plan.createdAt).toLocaleDateString()}`}</p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {plan.context?.audience || '—'} · {plan.posts?.length || 0} posts
+                        {plan.context?.audience || '-'} · {plan.posts?.length || 0} posts
                       </p>
                     </div>
                   </div>
@@ -374,7 +374,7 @@ export const ContentPlanner = () => {
             Hook → Outcome Content Planner
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Turn your monthly goal into a clear content plan with hooks, CTAs, and comment prompts that drive DMs and leads—not vanity likes.
+            Turn your monthly goal into a clear content plan with hooks, CTAs, and comment prompts that drive DMs and leads-not vanity likes.
           </p>
         </div>
 

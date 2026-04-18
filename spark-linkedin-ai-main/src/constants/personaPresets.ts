@@ -99,7 +99,7 @@ export const PERSONA_PRESETS: Record<PersonaSlug, PersonaPreset> = {
     stat: "+50% engagement per post",
     lines: [
       "Jumpstart your presence with scroll-stopping carousels and authentic comments.",
-      "Stand out—without wasting hours or “faking it.”"
+      "Stand out-without wasting hours or “faking it.”"
     ],
     icon: PenTool,
     profile: {

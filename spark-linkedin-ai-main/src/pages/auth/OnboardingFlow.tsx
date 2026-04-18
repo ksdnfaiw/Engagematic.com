@@ -75,7 +75,7 @@ const OnboardingFlow = () => {
         toast({
           title: result.isNewUser ? "Welcome to Engagematic!" : "Welcome back!",
           description: result.isNewUser
-            ? "Account created — let's personalize your experience."
+            ? "Account created - let's personalize your experience."
             : "Signed in with Google successfully.",
         });
         navigate(location.state?.returnTo || "/dashboard");

@@ -675,7 +675,7 @@ export default function LinkedInTextFormatterPage() {
                 </CardHeader>
                 <CardContent className="pt-0 space-y-2">
                   <div className="rounded-md border bg-muted/30 px-3 py-2 min-h-[44px] text-sm break-all font-mono">
-                    {value || "—"}
+                    {value || "-"}
                   </div>
                   <Button
                     size="sm"
@@ -777,10 +777,10 @@ export default function LinkedInTextFormatterPage() {
         <h2 className="text-2xl font-bold mb-6">How to use the LinkedIn Text Formatter</h2>
         <ol className="list-decimal list-inside space-y-4 text-muted-foreground">
           <li>
-            <strong className="text-foreground">Type or paste</strong> — Use the editor. Select text and use the toolbar (Bold, Italic, lists, emoji, link) or pick a full-style below.
+            <strong className="text-foreground">Type or paste</strong> - Use the editor. Select text and use the toolbar (Bold, Italic, lists, emoji, link) or pick a full-style below.
           </li>
           <li>
-            <strong className="text-foreground">Copy and paste on LinkedIn</strong> — Copy the formatted text and paste it into your LinkedIn post or message.
+            <strong className="text-foreground">Copy and paste on LinkedIn</strong> - Copy the formatted text and paste it into your LinkedIn post or message.
           </li>
         </ol>
 

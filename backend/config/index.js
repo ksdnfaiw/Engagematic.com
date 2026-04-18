@@ -6,11 +6,11 @@ export const config = {
   NODE_ENV: process.env.NODE_ENV || "development",
   PORT: process.env.PORT || 5000,
 
-  // Database — MUST be set via .env, no hardcoded credentials
+  // Database - MUST be set via .env, no hardcoded credentials
   MONGODB_URI: process.env.MONGODB_URI || "",
   DB_NAME: process.env.DB_NAME || "linkedinpulse",
 
-  // JWT — MUST be set via .env in production
+  // JWT - MUST be set via .env in production
   JWT_SECRET: process.env.JWT_SECRET || "dev-only-jwt-secret-change-in-production",
   JWT_EXPIRE: process.env.JWT_EXPIRE || "7d",
 
@@ -20,7 +20,7 @@ export const config = {
     process.env.JWT_SECRET ||
     "dev-only-admin-jwt-secret-change-in-production",
 
-  // Google AI — MUST be set via .env
+  // Google AI - MUST be set via .env
   // Supports multiple comma-separated keys for automatic rotation on quota limits
   GOOGLE_AI_API_KEY: process.env.GOOGLE_AI_API_KEY || "",
   GOOGLE_AI_API_KEYS: (process.env.GOOGLE_AI_API_KEYS || process.env.GOOGLE_AI_API_KEY || "")
@@ -29,7 +29,7 @@ export const config = {
     .filter(Boolean),
   _GOOGLE_AI_API_KEY_FROM_ENV: !!process.env.GOOGLE_AI_API_KEY,
 
-  // Razorpay — MUST be set via .env
+  // Razorpay - MUST be set via .env
   RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || "",
   RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || "",
   RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET || "",
@@ -42,7 +42,7 @@ export const config = {
   RATE_LIMIT_MAX_REQUESTS:
     parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000,
 
-  // CoreSignal (LinkedIn Data API) — set via .env
+  // CoreSignal (LinkedIn Data API) - set via .env
   // Documentation: https://docs.coresignal.com/
   CORESIGNAL_API_KEY: process.env.CORESIGNAL_API_KEY || "",
 

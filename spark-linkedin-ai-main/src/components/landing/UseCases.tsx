@@ -31,7 +31,7 @@ export const UseCases = () => {
             </h2>
           </div>
           <p className="max-w-xl text-sm leading-relaxed text-white/70 sm:text-base">
-            Spark adapts your narrative, tone, and cadence so each team shows up polished without extra headcount. Pick your lane—your workflow is already dialed in.
+            Spark adapts your narrative, tone, and cadence so each team shows up polished without extra headcount. Pick your lane-your workflow is already dialed in.
           </p>
         </div>
 

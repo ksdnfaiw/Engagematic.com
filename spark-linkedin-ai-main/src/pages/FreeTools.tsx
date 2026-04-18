@@ -60,7 +60,7 @@ const freeTools = [
   {
     id: "text-formatter",
     name: "LinkedIn Text Formatter",
-    description: "Format LinkedIn post text with bold, italic, underlined, strikethrough and more using Unicode. Copy and paste into posts or messages—no native formatting needed.",
+    description: "Format LinkedIn post text with bold, italic, underlined, strikethrough and more using Unicode. Copy and paste into posts or messages-no native formatting needed.",
     icon: Type,
     url: "/tools/linkedin-text-formatter",
     features: [
@@ -114,7 +114,7 @@ const freeTools = [
   {
     id: "video-transcript",
     name: "Free Video Transcript Generator",
-    description: "Convert any video to text instantly. Paste a YouTube link, public MP4 URL, or upload a file. Get a clean transcript in seconds — powered by AI.",
+    description: "Convert any video to text instantly. Paste a YouTube link, public MP4 URL, or upload a file. Get a clean transcript in seconds - powered by AI.",
     icon: FileVideo,
     url: "/tools/video-transcript-generator",
     features: [
@@ -237,37 +237,40 @@ const FreeTools = () => {
             {freeTools.map((tool) => {
               const Icon = tool.icon;
               return (
-                <Card key={tool.id} className="group relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-2xl">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${tool.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${tool.color} flex items-center justify-center shadow-lg`}>
-                        <Icon className="w-7 h-7 text-white" />
+              return (
+                <Link key={tool.id} to={tool.url} className="block group/link outline-none">
+                  <Card className="group relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                    <div className={`absolute inset-0 bg-gradient-to-br ${tool.color} opacity-0 group-hover/link:opacity-5 transition-opacity duration-300`} />
+                    <CardHeader className="pb-4">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${tool.color} flex items-center justify-center shadow-lg transform group-hover/link:scale-110 transition-transform duration-300`}>
+                          <Icon className="w-7 h-7 text-white" />
+                        </div>
+                        <Badge variant="secondary" className="text-xs">
+                          {tool.monthlySearches} searches/month
+                        </Badge>
                       </div>
-                      <Badge variant="secondary" className="text-xs">
-                        {tool.monthlySearches} searches/month
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-2xl mb-2">{tool.name}</CardTitle>
-                    <CardDescription className="text-base">{tool.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2 mb-6">
-                      {tool.features.map((feature, index) => (
-                        <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
-                          <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Link to={tool.url}>
-                      <Button className="w-full group/btn" size="lg">
-                        Use Free Tool
-                        <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
+                      <CardTitle className="text-2xl mb-2 group-hover/link:text-primary transition-colors">{tool.name}</CardTitle>
+                      <CardDescription className="text-base">{tool.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2 mb-6">
+                        {tool.features.map((feature, index) => (
+                          <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
+                            <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="w-full">
+                        <Button className="w-full group-hover/link:bg-primary group-hover/link:text-primary-foreground transition-colors" size="lg" variant="outline">
+                          Use Free Tool
+                          <ArrowRight className="ml-2 w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
               );
             })}
           </div>
