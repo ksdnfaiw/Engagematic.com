@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Sparkles, Zap, TrendingUp, Heart, Check, Loader2, Save, Lightbulb, Crown, Lock, Share2, ExternalLink, Minimize2, ArrowRight, Scissors, RotateCcw, BarChart3, Type } from "lucide-react";
+import { Copy, Sparkles, Zap, TrendingUp, Heart, Check, Loader2, Save, Lightbulb, Share2, ExternalLink, Minimize2, ArrowRight, Scissors, RotateCcw, BarChart3, Type, Wand2, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { useContentGeneration } from "../hooks/useContentGeneration";
@@ -30,27 +30,14 @@ const hookIcons = {
   statement: Zap,
   challenge: Sparkles,
   insight: TrendingUp,
+  contrarian: Zap,
 };
-
-// Default hooks with MongoDB ObjectId format (fallback only, will use API hooks)
-const DEFAULT_HOOKS = [
-  { _id: '507f1f77bcf86cd799439011', text: "Here's what changed everything:", category: "story" },
-  { _id: '507f1f77bcf86cd799439012', text: "The secret nobody talks about:", category: "insight" },
-  { _id: '507f1f77bcf86cd799439013', text: "I used to think that...", category: "story" },
-  { _id: '507f1f77bcf86cd799439014', text: "What if I told you that...", category: "question" },
-  { _id: '507f1f77bcf86cd799439015', text: "Why most people fail at...", category: "challenge" },
-  { _id: '507f1f77bcf86cd799439016', text: "The biggest lesson I learned this year:", category: "insight" },
-  { _id: '507f1f77bcf86cd799439017', text: "Stop doing this immediately:", category: "challenge" },
-  { _id: '507f1f77bcf86cd799439018', text: "3 years ago, I was...", category: "story" },
-  { _id: '507f1f77bcf86cd799439019', text: "Here's what nobody tells you about...", category: "insight" },
-  { _id: '507f1f77bcf86cd79943901a', text: "I made a mistake that cost me...", category: "story" }
-];
 
 const PostGenerator = () => {
   const location = useLocation();
   const [topic, setTopic] = useState("");
   const [selectedHook, setSelectedHook] = useState(null);
-  const [hooks, setHooks] = useState(DEFAULT_HOOKS);
+  const [hooks, setHooks] = useState([]);
   const [isLoadingHooks, setIsLoadingHooks] = useState(false);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [waitlistSource, setWaitlistSource] = useState("post-generator");
@@ -216,46 +203,47 @@ const PostGenerator = () => {
     }
   }, [isAuthenticated, authLoading, navigate]);
 
-  // Fetch hooks from API once on mount
-  useEffect(() => {
-    let isMounted = true; // Cleanup flag
-    
-    const fetchHooks = async () => {
-      try {
-        setIsLoadingHooks(true);
-        const response = await apiClient.getHooks();
-        
-        if (!isMounted) return; // Prevent state update if unmounted
-        
-        if (response.success && response.data.hooks.length > 0) {
-          console.log('✅ Fetched hooks from API:', response.data.hooks.length);
-          setHooks(response.data.hooks);
-          // Auto-select first hook for better UX (only if no hook selected)
-          setSelectedHook(response.data.hooks[0]);
-        } else {
-          console.warn('⚠️ No hooks returned from API, using defaults');
-          setSelectedHook(DEFAULT_HOOKS[0]); // Auto-select first default hook
-        }
-      } catch (error) {
-        console.error('❌ Failed to fetch hooks:', error);
-        // Keep using default hooks
-        if (isMounted) {
-          console.log('Using fallback default hooks');
-          setSelectedHook(DEFAULT_HOOKS[0]); // Auto-select first default hook
-        }
-      } finally {
-        if (isMounted) {
-        setIsLoadingHooks(false);
-        }
-      }
-    };
+  // Generate custom hooks based on the user's typed topic — FREE for all users
+  const handleGenerateCustomHooks = async () => {
+    if (!topic.trim() || topic.trim().length < 5) {
+      toast({
+        title: "Enter your topic first",
+        description: "Type what you want to post about so we can generate hooks specifically for it.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    fetchHooks();
-    
-    return () => {
-      isMounted = false; // Cleanup on unmount
-    };
-  }, []); // Empty dependency array - run once on mount
+    try {
+      setIsLoadingHooks(true);
+      setSelectedHook(null); // clear stale selection
+      const response = await apiClient.generateCustomHooks(topic.trim());
+
+      if (response.success && response.data.hooks.length > 0) {
+        setHooks(response.data.hooks);
+        setSelectedHook(response.data.hooks[0]); // auto-select first
+        toast({
+          title: "✨ Hooks generated!",
+          description: `${response.data.hooks.length} custom hooks crafted for your topic.`,
+        });
+      } else {
+        toast({
+          title: "No hooks returned",
+          description: "Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ Custom hook generation error:', error);
+      toast({
+        title: "Failed to generate hooks",
+        description: error.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingHooks(false);
+    }
+  };
 
   // Creative suggestions removed - replaced with formatting preferences and persona customization
 
@@ -339,15 +327,16 @@ const PostGenerator = () => {
       selectedPersona
     });
 
-    // Check if user is pro and using a trending hook
-    const isProUser = subscription?.plan === 'pro';
+    // Detect hook type — both trending_ and custom_ use text-based API (no DB lookup)
     const isTrendingHook = selectedHook._id && selectedHook._id.toString().startsWith('trending_');
+    const isCustomGeneratedHook = selectedHook._id && selectedHook._id.toString().startsWith('custom_');
+    const needsCustomPath = isTrendingHook || isCustomGeneratedHook;
     
     let result;
     
     try {
-      // Use custom API for pro users with trending hooks
-      if (isProUser && isTrendingHook) {
+      // Use custom (text-based) API for AI-generated hooks — no DB ID lookup required
+      if (needsCustomPath) {
         const postData: any = {
           topic,
           title: selectedHook.text || selectedHook.title,
@@ -355,11 +344,10 @@ const PostGenerator = () => {
           ...personaData
         };
         
-        console.log('🔥 Using custom API for pro user with trending hook:', postData);
+        console.log('🔥 Using custom API for AI-generated hook:', postData);
         result = await generatePostCustom(postData);
       } else {
-        // Use standard API for regular hooks
-        // Ensure hookId is a valid string
+        // Use standard DB-lookup API for classic stored hooks
         const hookId = selectedHook._id?.toString() || selectedHook._id;
         
         if (!hookId) {
@@ -371,11 +359,6 @@ const PostGenerator = () => {
           hookId: hookId,
           ...personaData
         };
-        
-        // If it's a trending hook (but not pro), include the hook text
-        if (isTrendingHook) {
-          postData.hookText = selectedHook.text || selectedHook.title;
-        }
         
         console.log('📤 Sending post generation request:', { ...postData, persona: '...' });
         result = await generatePost(postData);
@@ -550,84 +533,96 @@ const PostGenerator = () => {
             </div>
             </Card>
 
-            {/* Hook Selection with Premium Trending Generator */}
+            {/* Hook Generation — Topic-Based, Free for All Users */}
             <Card className="shadow-lg border-2">
               <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-1">
                   <label className="text-sm font-semibold flex items-center gap-2">
-                    Choose Your Viral Hook *
-                    {isLoadingHooks && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
-              </label>
-                  <div className="flex items-center gap-2">
-                    {subscription?.plan === 'trial' && (
-                      <button
-                        type="button"
-                        onClick={() => handleUpgradeClick('premium-badge')}
-                        className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border bg-muted hover:bg-muted/80 transition cursor-pointer"
-                      >
-                        <Lock className="h-3 w-3" /> Premium
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        if (subscription?.plan === 'trial') {
-                          handleUpgradeClick('trending-hooks');
-                          return;
-                        }
-                        try {
-                          setIsLoadingHooks(true);
-                          const res = await apiClient.getTrendingHooks({ 
-                            topic: topic || 'professional content',
-                            industry: selectedPersona?.name || 'general'
-                          });
-                          if (res.success && res.data.hooks.length > 0) {
-                            setHooks(res.data.hooks);
-                            setSelectedHook(res.data.hooks[0]);
-                            toast({ 
-                              title: 'Trending hooks generated! ✨', 
-                              description: `Generated ${res.data.hooks.length} fresh hooks using AI`
-                            });
-                          } else {
-                            toast({ title: 'No trending hooks available', description: 'Please try again later', variant: 'destructive' });
-                          }
-                        } catch (e) {
-                          console.error(e);
-                          toast({ title: 'Failed to generate trending hooks', variant: 'destructive' });
-                        } finally {
-                          setIsLoadingHooks(false);
-                        }
-                      }}
-                      className="inline-flex items-center gap-2 text-xs px-3 py-2 rounded-md border bg-card hover:bg-muted transition"
-                    >
-                      <Crown className="h-3 w-3 text-yellow-500" />
-                      Generate Trending Hooks
-                    </button>
-                  </div>
+                    <Wand2 className="h-4 w-4 text-primary" />
+                    Choose Your Hook *
+                  </label>
+                  <Badge variant="outline" className="text-xs text-green-600 border-green-500/40 bg-green-500/10">
+                    Free for all users
+                  </Badge>
                 </div>
+                <p className="text-xs text-muted-foreground mb-4">
+                  Generate 5 AI hooks crafted specifically for your topic above.
+                </p>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {hooks.slice(0, 10).map((hook) => {
-                    const Icon = hookIcons[hook.category] || Sparkles;
-                    return (
-                      <button
-                        key={hook._id}
-                        onClick={() => setSelectedHook(hook)}
-                        className={`p-4 rounded-lg border-2 text-left transition-all ${
-                          selectedHook?._id === hook._id
-                            ? "border-primary bg-primary/10 shadow-md"
-                            : "border-border hover:border-primary/50 bg-card"
-                        }`}
-                      >
-                        <Icon className="h-4 w-4 mb-2 text-primary" />
-                        <div className="text-sm font-medium">{hook.text}</div>
-                        <Badge variant="secondary" className="mt-2 text-xs">
-                          {hook.category}
-                        </Badge>
-                      </button>
-                    );
-                  })}
-                </div>
+                {/* Generate Button */}
+                <button
+                  type="button"
+                  onClick={handleGenerateCustomHooks}
+                  disabled={isLoadingHooks || !topic.trim()}
+                  className="w-full mb-4 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-primary to-purple-600 text-white text-sm font-semibold shadow-md hover:shadow-lg hover:from-primary/90 hover:to-purple-600/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoadingHooks ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Generating hooks…</>
+                  ) : (
+                    <><Sparkles className="h-4 w-4" /> ✨ Generate Hooks from My Topic</>
+                  )}
+                </button>
+
+                {/* Empty state – before any hooks generated */}
+                {hooks.length === 0 && !isLoadingHooks && (
+                  <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-muted rounded-lg text-center gap-2">
+                    <Lightbulb className="h-8 w-8 text-muted-foreground/40" />
+                    <p className="text-sm text-muted-foreground font-medium">No hooks yet</p>
+                    <p className="text-xs text-muted-foreground/70">
+                      Enter your topic above, then click "✨ Generate Hooks from My Topic"
+                    </p>
+                  </div>
+                )}
+
+                {/* Loading skeleton */}
+                {isLoadingHooks && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {[1,2,3,4,5].map((i) => (
+                      <div key={i} className="p-4 rounded-lg border-2 border-muted animate-pulse bg-muted/30 h-20" />
+                    ))}
+                  </div>
+                )}
+
+                {/* Generated hooks grid */}
+                {hooks.length > 0 && !isLoadingHooks && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {hooks.map((hook) => {
+                      const Icon = hookIcons[hook.category] || Sparkles;
+                      const isSelected = selectedHook?._id === hook._id;
+                      return (
+                        <button
+                          key={hook._id}
+                          onClick={() => setSelectedHook(hook)}
+                          className={`p-4 rounded-lg border-2 text-left transition-all ${
+                            isSelected
+                              ? "border-primary bg-primary/10 shadow-md ring-1 ring-primary/20"
+                              : "border-border hover:border-primary/50 bg-card hover:bg-muted/30"
+                          }`}
+                        >
+                          <div className="flex items-start gap-2">
+                            <Icon className={`h-4 w-4 mt-0.5 flex-shrink-0 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                            <div>
+                              <div className="text-sm font-medium leading-snug">{hook.text}</div>
+                              <Badge variant="secondary" className="mt-2 text-xs capitalize">
+                                {hook.category}
+                              </Badge>
+                            </div>
+                            {isSelected && (
+                              <Check className="h-4 w-4 text-primary ml-auto flex-shrink-0 mt-0.5" />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Validation hint */}
+                {hooks.length > 0 && !selectedHook && (
+                  <p className="mt-3 text-xs text-orange-500 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" /> Please select a hook to continue.
+                  </p>
+                )}
               </div>
             </Card>
 

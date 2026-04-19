@@ -459,4 +459,138 @@ router.get(
   }
 );
 
+// Generate custom AI hooks based on user's topic - FREE FOR ALL USERS
+router.post(
+  "/generate",
+  authenticateToken, // must be logged in, but NO plan check — free for all
+  async (req, res) => {
+    try {
+      const { topic } = req.body;
+
+      if (!topic || topic.trim().length < 5) {
+        return res.status(400).json({
+          success: false,
+          message: "Please provide a topic with at least 5 characters.",
+        });
+      }
+
+      const trimmedTopic = topic.trim().slice(0, 500); // safety cap
+
+      const prompt = `You are a world-class LinkedIn copywriting expert. A user wants to write a LinkedIn post about the following topic:
+
+"${trimmedTopic}"
+
+Generate exactly 5 distinct, compelling opening hooks for this specific topic. Each hook must feel tailor-made for this exact topic — do NOT write generic hooks.
+
+Use each of these 5 copywriting frameworks, one per hook:
+1. contrarian  — Challenge a widely-held belief related to this topic.
+2. story       — Start in the middle of a vivid, specific, personal scenario related to this topic.
+3. question    — Ask a sharp, thought-provoking question that targets a precise pain point related to this topic.
+4. insight     — Deliver a surprising, data-driven or counterintuitive observation about this topic.
+5. challenge   — Call out a mistake or bad habit directly related to this topic.
+
+Rules:
+- Each hook must be 10–100 characters long.
+- Each hook must stand on its own as the opening line of a post.
+- No emojis.
+- Do NOT include generic phrases like "Here's what nobody tells you" unless directly tied to the topic.
+- Sound human, not like marketing copy.
+
+Return ONLY a valid JSON array (no markdown, no explanation):
+[
+  { "text": "hook text here", "category": "contrarian" },
+  { "text": "hook text here", "category": "story" },
+  { "text": "hook text here", "category": "question" },
+  { "text": "hook text here", "category": "insight" },
+  { "text": "hook text here", "category": "challenge" }
+]`;
+
+      let aiResponse;
+      try {
+        aiResponse = await googleAIService.generateText(prompt, {
+          temperature: 0.85,
+          maxOutputTokens: 1500,
+        });
+      } catch (aiError) {
+        console.error("❌ AI error during custom hook generation:", aiError.message);
+        throw new Error(`AI service error: ${aiError.message}`);
+      }
+
+      if (!aiResponse || !aiResponse.text || !aiResponse.text.trim()) {
+        throw new Error("AI response was empty");
+      }
+
+      // Parse the AI response
+      let generatedHooks;
+      try {
+        let cleaned = aiResponse.text
+          .replace(/```json\n?/g, "")
+          .replace(/```\n?/g, "")
+          .trim();
+
+        const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
+        if (jsonMatch) cleaned = jsonMatch[0];
+
+        generatedHooks = JSON.parse(cleaned);
+
+        if (!Array.isArray(generatedHooks)) throw new Error("Not an array");
+
+        generatedHooks = generatedHooks
+          .filter((h) => h && h.text && h.text.trim().length >= 5)
+          .map((h, i) => ({
+            _id: `custom_${Date.now()}_${i}`,
+            text: h.text.trim(),
+            category: h.category || "insight",
+            isCustomGenerated: true,
+            isDefault: false,
+            isActive: true,
+            usageCount: 0,
+          }))
+          .slice(0, 5);
+      } catch (parseError) {
+        console.error("⚠️ Parse error for custom hooks:", parseError.message);
+        // Fallback: split lines
+        const lines = aiResponse.text
+          .split("\n")
+          .map((l) => l.trim())
+          .filter((l) => l.length >= 10 && !l.startsWith("{") && !l.startsWith("["));
+
+        if (lines.length === 0) throw new Error("Could not extract hooks from AI response");
+
+        generatedHooks = lines.slice(0, 5).map((line, i) => ({
+          _id: `custom_${Date.now()}_${i}`,
+          text: line.replace(/^["'\d.\-*•]+\s*/, "").trim(),
+          category: ["contrarian", "story", "question", "insight", "challenge"][i % 5],
+          isCustomGenerated: true,
+          isDefault: false,
+          isActive: true,
+          usageCount: 0,
+        }));
+      }
+
+      if (!generatedHooks || generatedHooks.length === 0) {
+        throw new Error("No valid hooks were generated");
+      }
+
+      console.log(`✅ Generated ${generatedHooks.length} custom hooks for topic: "${trimmedTopic.slice(0, 50)}"`);
+
+      res.json({
+        success: true,
+        data: {
+          hooks: generatedHooks,
+          topic: trimmedTopic,
+          generatedAt: new Date(),
+          source: "ai-custom",
+        },
+      });
+    } catch (error) {
+      console.error("❌ Custom hook generation error:", error.message);
+      res.status(500).json({
+        success: false,
+        message: "Failed to generate custom hooks. Please try again.",
+      });
+    }
+  }
+);
+
 export default router;
