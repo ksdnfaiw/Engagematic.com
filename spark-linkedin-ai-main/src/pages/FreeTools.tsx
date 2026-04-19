@@ -237,7 +237,6 @@ const FreeTools = () => {
             {freeTools.map((tool) => {
               const Icon = tool.icon;
               return (
-              return (
                 <Link key={tool.id} to={tool.url} className="block group/link outline-none">
                   <Card className="group relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                     <div className={`absolute inset-0 bg-gradient-to-br ${tool.color} opacity-0 group-hover/link:opacity-5 transition-opacity duration-300`} />
