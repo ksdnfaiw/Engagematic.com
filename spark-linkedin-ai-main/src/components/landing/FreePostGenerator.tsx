@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Sparkles, Loader2, Copy, ArrowRight, Check, Zap, TrendingUp, Rocket, Crown, Lock, Download, Share2, ExternalLink } from "lucide-react";
+import { Sparkles, Loader2, Copy, ArrowRight, Check, Zap, TrendingUp, Rocket, Crown, Lock, Download, Share2, ExternalLink, Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import apiClient from "@/services/api.js";
@@ -41,6 +41,9 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
   const [audience, setAudience] = useState("");
   const [goal, setGoal] = useState("");
   const [topic, setTopic] = useState("");
+  const [hooks, setHooks] = useState<any[]>([]);
+  const [selectedHook, setSelectedHook] = useState<any>(null);
+  const [isGeneratingHooks, setIsGeneratingHooks] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPost, setGeneratedPost] = useState<any>(null);
   const [hasGenerated, setHasGenerated] = useState(false);
@@ -62,6 +65,44 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
       }
     }
   }, []);
+
+  const handleGenerateCustomHooks = async () => {
+    if (!topic.trim()) {
+      toast({
+        title: "Topic required",
+        description: "Please enter a topic first to generate hooks.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingHooks(true);
+    try {
+      // The generateCustomHooks method uses the POST /api/hooks/generate endpoint
+      // which is free for all users and generates contextually relevant hooks.
+      const response = await apiClient.generateCustomHooks(topic);
+      
+      if (response.success && response.data?.hooks) {
+        setHooks(response.data.hooks);
+        setSelectedHook(response.data.hooks[0]); // Auto-select the first one
+        toast({
+          title: "Hooks Generated",
+          description: "Select your favorite hook to continue.",
+        });
+      } else {
+        throw new Error(response.message || "Failed to generate hooks");
+      }
+    } catch (error: any) {
+      console.error("Hook generation error:", error);
+      toast({
+        title: "Generation failed",
+        description: error.message || "We couldn't generate custom hooks. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingHooks(false);
+    }
+  };
 
   const handleGenerate = async () => {
     if (!persona) {
@@ -92,6 +133,15 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
       return;
     }
 
+    if (!selectedHook) {
+      toast({
+        title: "Hook required",
+        description: "Please generate and select a hook first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
 
     try {
@@ -109,13 +159,11 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
       const personaId = personaMap[persona] || personaMap["founder"];
       const personaData = EXPANDED_PERSONAS.find(p => p.id === personaId) || EXPANDED_PERSONAS[0];
 
-      // Let backend select hook contextually based on persona, goal, topic, and audience
-      // Don't send hookId - backend will intelligently choose based on context
       let response;
       try {
         response = await apiClient.generatePostFree({
           topic: topic.trim(),
-          // No hookId - backend will select contextually
+          customHookText: selectedHook?.text,
           persona: personaData,
           audience: audience.trim() || undefined,
           goal: goal || undefined,
@@ -130,7 +178,7 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
           },
           body: JSON.stringify({
             topic: topic.trim(),
-            // No hookId - backend will select contextually based on persona, goal, topic, audience
+            customHookText: selectedHook?.text,
             persona: personaData,
             audience: audience.trim() || undefined,
             goal: goal || undefined,
@@ -471,10 +519,97 @@ export const FreePostGenerator = ({ onGenerated }: FreePostGeneratorProps) => {
             />
           </div>
 
+          {/* Hook Selection Section */}
+          <div className="space-y-4 pt-1 pb-2">
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-semibold flex items-center gap-2">
+                <Wand2 className="h-4 w-4 text-primary" />
+                Choose Your Hook <span className="text-red-500">*</span>
+              </label>
+              <Badge variant="outline" className="text-xs text-green-600 border-green-500/40 bg-green-500/10">
+                Free Feature
+              </Badge>
+            </div>
+            
+            {hooks.length === 0 ? (
+              <div className="mt-2 text-center p-4 border border-dashed rounded-lg bg-slate-50 dark:bg-slate-900/50">
+                <p className="text-xs text-muted-foreground mb-3">
+                  Generate 5 AI hooks crafted specifically for your topic above.
+                </p>
+                <Button
+                  onClick={handleGenerateCustomHooks}
+                  disabled={isGeneratingHooks || !topic.trim()}
+                  variant="secondary"
+                  className="w-full h-10 gap-2 bg-white hover:bg-slate-100 border shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800"
+                >
+                  {isGeneratingHooks ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      Crafting Hooks...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4 text-primary" />
+                      ✨ Generate Hooks from My Topic
+                    </>
+                  )}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="grid gap-2">
+                  {hooks.map((hook, index) => (
+                    <button
+                      key={hook._id || index}
+                      onClick={() => setSelectedHook(hook)}
+                      className={`text-left p-3 rounded-lg border-2 transition-all ${
+                        selectedHook?._id === hook._id 
+                          ? "border-primary bg-primary/5 shadow-sm" 
+                          : "border-border hover:border-primary/50 hover:bg-muted/50"
+                      }`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className={`mt-0.5 rounded-full p-1 flex-shrink-0 ${
+                          selectedHook?._id === hook._id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                        }`}>
+                          <Check className="h-3 w-3" />
+                        </div>
+                        <div>
+                          <div className="text-sm line-clamp-2">{hook.text || hook.hook}</div>
+                          {hook.category && (
+                            <div className="text-[10px] text-muted-foreground mt-1 capitalize">
+                              {hook.category.replace('-', ' ')} Framework
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="flex justify-end pt-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleGenerateCustomHooks}
+                    disabled={isGeneratingHooks}
+                    className="text-xs h-8 text-muted-foreground hover:text-primary"
+                  >
+                    {isGeneratingHooks ? (
+                      <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Regenerating...</>
+                    ) : (
+                      <><Zap className="h-3 w-3 mr-1" /> Generate Different Hooks</>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Generate Button */}
           <Button
             onClick={handleGenerate}
-            disabled={isGenerating || !persona || !topic.trim()}
+            disabled={isGenerating || !persona || !topic.trim() || !selectedHook}
             className="w-full h-9 sm:h-10 text-xs sm:text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all group"
           >
             {isGenerating ? (
