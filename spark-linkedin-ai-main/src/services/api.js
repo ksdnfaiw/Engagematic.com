@@ -539,6 +539,15 @@ class ApiClient {
     );
   }
 
+  // Generate custom AI hooks based on the user's own topic — free for all users
+  async generateCustomHooks(topic) {
+    return this.request("/hooks/generate", {
+      method: "POST",
+      body: JSON.stringify({ topic }),
+    });
+  }
+
+
   // Trial management methods
   async getTrialStatus() {
     return this.request("/trial/status");
