@@ -36,6 +36,22 @@ import {
 import { Link } from "react-router-dom";
 
 // ─────────────────────────────────────────────
+// API Base URL (same resolution as apiClient)
+// ─────────────────────────────────────────────
+const getApiBaseUrl = (): string => {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  if (typeof window !== "undefined") {
+    const h = window.location.hostname;
+    if (h === "www.engagematic.com" || h === "engagematic.com" ||
+        h === "www.linkedinpulse.com" || h === "linkedinpulse.com") {
+      return "https://spark-linkedin-ai.onrender.com/api";
+    }
+  }
+  return "/api"; // local dev — Vite proxy handles this
+};
+const API_BASE = getApiBaseUrl();
+
+// ─────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────
 const LANGUAGES = [
@@ -201,7 +217,7 @@ const VideoTranscriptTool = () => {
     setIsCached(false);
 
     try {
-      const res = await fetch("/api/transcript/url", {
+      const res = await fetch(`${API_BASE}/transcript/url`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: videoUrl.trim(), lang: language }),
@@ -238,7 +254,7 @@ const VideoTranscriptTool = () => {
       formData.append("file", selectedFile);
       formData.append("lang", language);
 
-      const res = await fetch("/api/transcript/upload", {
+      const res = await fetch(`${API_BASE}/transcript/upload`, {
         method: "POST",
         body: formData,
       });
