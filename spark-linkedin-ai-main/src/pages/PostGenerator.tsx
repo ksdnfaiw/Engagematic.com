@@ -35,6 +35,14 @@ const hookIcons = {
 
 const PostGenerator = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const { personas, samplePersonas, isLoading: personasLoading } = usePersonas();
+  const { isGenerating, generatedContent, setGeneratedContent, generatePost, generatePostCustom, copyToClipboard, saveContent } = useContentGeneration();
+  const { subscription, canPerformAction, fetchSubscription } = useSubscription();
+
+  // State variables
   const [topic, setTopic] = useState("");
   const [selectedHook, setSelectedHook] = useState(null);
   const [hooks, setHooks] = useState([]);
@@ -48,9 +56,6 @@ const PostGenerator = () => {
   const [shortenedContent, setShortenedContent] = useState("");
   const [showPremiumUpgrade, setShowPremiumUpgrade] = useState(false);
   const [premiumFeatureName, setPremiumFeatureName] = useState("");
-  
-  // SIMPLIFIED: Just use sample personas directly, no complex creation logic
-  const { personas, samplePersonas, isLoading: personasLoading } = usePersonas();
   const [selectedPersona, setSelectedPersona] = useState(null);
   
   // Safety fallback for loading states
@@ -63,12 +68,6 @@ const PostGenerator = () => {
       return () => clearTimeout(timer);
     }
   }, [personasLoading, authLoading]);
-  
-  const { toast } = useToast();
-  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
-  const navigate = useNavigate();
-  const { isGenerating, generatedContent, setGeneratedContent, generatePost, generatePostCustom, copyToClipboard, saveContent } = useContentGeneration();
-  const { subscription, canPerformAction, fetchSubscription } = useSubscription();
 
   // Reset shortened state when new content is generated
   useEffect(() => {
