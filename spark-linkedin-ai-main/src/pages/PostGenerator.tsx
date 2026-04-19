@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Sparkles, Zap, TrendingUp, Heart, Check, Loader2, Save, Lightbulb, Share2, ExternalLink, Minimize2, ArrowRight, Scissors, RotateCcw, BarChart3, Type, Wand2, AlertCircle } from "lucide-react";
+import { Copy, Sparkles, Zap, TrendingUp, Heart, Check, Loader2, Save, Lightbulb, Share2, ExternalLink, Minimize2, ArrowRight, Scissors, RotateCcw, BarChart3, Type, Wand2, AlertCircle, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { useContentGeneration } from "../hooks/useContentGeneration";
@@ -52,6 +52,17 @@ const PostGenerator = () => {
   // SIMPLIFIED: Just use sample personas directly, no complex creation logic
   const { personas, samplePersonas, isLoading: personasLoading } = usePersonas();
   const [selectedPersona, setSelectedPersona] = useState(null);
+  
+  // Safety fallback for loading states
+  const [loadingTimeoutReached, setLoadingTimeoutReached] = useState(false);
+  useEffect(() => {
+    if (personasLoading || authLoading) {
+      const timer = setTimeout(() => {
+        setLoadingTimeoutReached(true);
+      }, 10000); // 10s timeout
+      return () => clearTimeout(timer);
+    }
+  }, [personasLoading, authLoading]);
   
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
@@ -417,7 +428,7 @@ const PostGenerator = () => {
     }
   };
 
-  if (authLoading || personasLoading) {
+  if ((authLoading || personasLoading) && !loadingTimeoutReached) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex items-center gap-2">

@@ -44,6 +44,17 @@ const CommentGenerator = () => {
   const { canPerformAction, fetchSubscription } = useSubscription();
   const navigate = useNavigate();
 
+  // Safety fallback for loading states
+  const [loadingTimeoutReached, setLoadingTimeoutReached] = useState(false);
+  useEffect(() => {
+    if (personasLoading || authLoading) {
+      const timer = setTimeout(() => {
+        setLoadingTimeoutReached(true);
+      }, 10000); // 10s timeout
+      return () => clearTimeout(timer);
+    }
+  }, [personasLoading, authLoading]);
+
   // Cleanup testimonial timeout on unmount
   useEffect(() => {
     return () => {
@@ -236,7 +247,7 @@ const CommentGenerator = () => {
     });
   };
 
-  if (authLoading || personasLoading) {
+  if ((authLoading || personasLoading) && !loadingTimeoutReached) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex items-center gap-2">
