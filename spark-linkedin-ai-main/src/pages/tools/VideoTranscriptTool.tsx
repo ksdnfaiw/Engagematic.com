@@ -35,7 +35,6 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-// ─────────────────────────────────────────────
 // API Base URL (same resolution as apiClient)
 // ─────────────────────────────────────────────
 const getApiBaseUrl = (): string => {
@@ -88,7 +87,7 @@ const faqData = [
   },
   {
     question: "Is this transcript tool really free?",
-    answer: "Yes! You can generate up to 5 transcripts per day completely free with no signup required. This is powered by Supadata's transcription API at no cost to you.",
+    answer: "Yes! You can generate 1 transcription for free without an account. Create a free account to get 3 transcriptions, or upgrade to Pro for 30 transcriptions per month.",
   },
   {
     question: "How accurate are the transcripts?",

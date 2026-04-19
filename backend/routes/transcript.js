@@ -12,6 +12,10 @@ import axios from "axios";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import jwt from "jsonwebtoken";
+import UserSubscription from "../models/UserSubscription.js";
+import User from "../models/User.js";
+import { config } from "../config/index.js";
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -58,14 +62,32 @@ function getIpUsage(ip) {
   return entry;
 }
 
-function checkAndIncrementRateLimit(ip) {
+function checkAndIncrementRateLimit(ip, limit = RATE_LIMIT_PER_DAY) {
   const usage = getIpUsage(ip);
-  if (usage.count >= RATE_LIMIT_PER_DAY) {
+  if (usage.count >= limit) {
     return false;
   }
   usage.count++;
   ipUsageMap.set(ip, usage);
   return true;
+}
+
+// Optional Auth Helper
+async function getAuthenticatedUser(req) {
+  try {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    if (!token) return null;
+
+    const decoded = jwt.verify(token, config.JWT_SECRET);
+    const user = await User.findById(decoded.userId);
+    if (!user || !user.isActive) return null;
+
+    const subscription = await UserSubscription.findOne({ userId: user._id });
+    return { user, subscription };
+  } catch (err) {
+    return null;
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -257,13 +279,39 @@ router.post("/url", async (req, res) => {
     });
   }
 
-  // Rate limiting (only for non-cached new requests)
-  if (!checkAndIncrementRateLimit(ip)) {
-    return res.status(429).json({
-      success: false,
-      error: "RATE_LIMIT",
-      message: `You've hit today's free limit of ${RATE_LIMIT_PER_DAY} transcripts. Please come back tomorrow or sign in for higher limits.`,
-    });
+  // Identify user/subscription
+  const authData = await getAuthenticatedUser(req);
+  const isAuth = !!authData;
+  const { subscription } = authData || {};
+
+  // Rate limiting & Quota Check
+  if (isAuth && subscription) {
+    const canPerform = subscription.canPerformAction("generate_transcript");
+    if (!canPerform.allowed) {
+      if (canPerform.reason.includes("Trial transcription limit reached") || canPerform.reason.includes("limit reached")) {
+        return res.status(402).json({
+          success: false,
+          error: "QUOTA_EXCEEDED",
+          message: canPerform.reason,
+          action: "upgrade"
+        });
+      }
+      return res.status(403).json({
+        success: false,
+        error: "FORBIDDEN",
+        message: canPerform.reason
+      });
+    }
+  } else {
+    // 1 without sign up
+    const ANONYMOUS_LIMIT = 1; 
+    if (!checkAndIncrementRateLimit(ip, ANONYMOUS_LIMIT)) {
+      return res.status(429).json({
+        success: false,
+        error: "RATE_LIMIT",
+        message: `You've hit the limit for anonymous users (1 transcription). Please sign in for higher limits.`,
+      });
+    }
   }
 
   try {
@@ -276,6 +324,11 @@ router.post("/url", async (req, res) => {
         error: "EMPTY_TRANSCRIPT",
         message: "No transcript was returned for this video. The video may not have speech, or the URL may be restricted.",
       });
+    }
+
+    // Record usage if authenticated
+    if (isAuth && subscription) {
+      await subscription.recordUsage("generate_transcript");
     }
 
     // Store in cache
@@ -349,15 +402,36 @@ router.post("/upload", (req, res, next) => {
   const filePath = req.file.path;
   const normalizedLang = (lang || "auto").toLowerCase().trim();
 
-  // Rate limiting
-  if (!checkAndIncrementRateLimit(ip)) {
-    // Clean up uploaded file
-    try { fs.unlinkSync(filePath); } catch {}
-    return res.status(429).json({
-      success: false,
-      error: "RATE_LIMIT",
-      message: `You've hit today's free limit of ${RATE_LIMIT_PER_DAY} transcripts. Please come back tomorrow or sign in for higher limits.`,
-    });
+  // Identify user/subscription
+  const authData = await getAuthenticatedUser(req);
+  const isAuth = !!authData;
+  const { subscription } = authData || {};
+
+  // Rate limiting & Quota Check
+  if (isAuth && subscription) {
+    const canPerform = subscription.canPerformAction("generate_transcript");
+    if (!canPerform.allowed) {
+      // Clean up uploaded file
+      try { fs.unlinkSync(filePath); } catch {}
+      return res.status(402).json({
+        success: false,
+        error: "QUOTA_EXCEEDED",
+        message: canPerform.reason,
+        action: "upgrade"
+      });
+    }
+  } else {
+    // 1 without sign up
+    const ANONYMOUS_LIMIT = 1;
+    if (!checkAndIncrementRateLimit(ip, ANONYMOUS_LIMIT)) {
+      // Clean up uploaded file
+      try { fs.unlinkSync(filePath); } catch {}
+      return res.status(429).json({
+        success: false,
+        error: "RATE_LIMIT",
+        message: `You've hit the limit for anonymous users (1 transcription). Please sign in for higher limits.`,
+      });
+    }
   }
 
   try {
@@ -427,6 +501,11 @@ router.post("/upload", (req, res, next) => {
         error: "EMPTY_TRANSCRIPT",
         message: "No transcript was returned. The video may not contain audible speech.",
       });
+    }
+
+    // Record usage if authenticated
+    if (isAuth && subscription) {
+      await subscription.recordUsage("generate_transcript");
     }
 
     return res.json({

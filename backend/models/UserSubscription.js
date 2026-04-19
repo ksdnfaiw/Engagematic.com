@@ -101,6 +101,10 @@ const userSubscriptionSchema = new mongoose.Schema(
         type: Number,
         default: -1, // UNLIMITED profile analyses
       },
+      transcriptsPerMonth: {
+        type: Number,
+        default: 3, // Trial: 3 per month
+      },
       prioritySupport: {
         type: Boolean,
         default: false,
@@ -158,6 +162,10 @@ const userSubscriptionSchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
+      transcriptsGenerated: {
+        type: Number,
+        default: 0,
+      },
     },
 
     // Metadata
@@ -187,6 +195,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = 1; // 1 profile analysis for free trial
+        this.limits.transcriptsPerMonth = 3; // 3 transcripts for free trial
         this.limits.prioritySupport = false;
         this.billing.amount = 0;
         break;
@@ -198,6 +207,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = 5; // 5 profile analyses per month
+        this.limits.transcriptsPerMonth = 5; // 5 transcripts per month
         this.limits.prioritySupport = false;
         this.billing.amount = 199; // ₹199/month (INR)
         break;
@@ -209,6 +219,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = 10; // 10 profile analyses per month
+        this.limits.transcriptsPerMonth = 30; // 30 transcripts per month
         this.limits.prioritySupport = true;
         this.billing.amount = 449; // ₹449/month (INR)
         break;
@@ -220,6 +231,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = -1; // UNLIMITED profile analyses
+        this.limits.transcriptsPerMonth = 100; // 100 transcripts per month
         this.limits.prioritySupport = true; // Dedicated manager
         this.billing.amount = 49; // $49/month
         break;
@@ -309,6 +321,21 @@ userSubscriptionSchema.methods.canPerformAction = function (action) {
         };
       }
       break;
+
+    case "generate_transcript":
+      if (
+        this.limits.transcriptsPerMonth !== -1 &&
+        this.usage.transcriptsGenerated >= this.limits.transcriptsPerMonth
+      ) {
+        return {
+          allowed: false,
+          reason: `Transcription limit (${this.limits.transcriptsPerMonth}) reached. Upgrade for more transcriptions.`,
+          code: "TRANSCRIPT_LIMIT_EXCEEDED",
+          current: this.usage.transcriptsGenerated,
+          limit: this.limits.transcriptsPerMonth,
+        };
+      }
+      break;
   }
 
   return { allowed: true };
@@ -345,6 +372,11 @@ userSubscriptionSchema.methods.recordUsage = function (action) {
     case "analyze_linkedin":
       this.usage.linkedinAnalyses += 1;
       this.tokens.used += 8; // 8 tokens per LinkedIn analysis
+      break;
+
+    case "generate_transcript":
+      this.usage.transcriptsGenerated += 1;
+      this.tokens.used += 10; // 10 tokens per transcript
       break;
   }
 
@@ -415,6 +447,7 @@ userSubscriptionSchema.statics.createTrial = function (userId) {
       templatesAccess: true,
       linkedinAnalysis: true,
       profileAnalyses: -1,
+      transcriptsPerMonth: 3,
       prioritySupport: false,
     },
     tokens: {

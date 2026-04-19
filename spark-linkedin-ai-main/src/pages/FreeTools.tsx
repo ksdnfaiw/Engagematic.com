@@ -3,9 +3,9 @@ import { PAGE_SEO, SITE_URL, generateFAQSchema, generateBreadcrumbSchema } from 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  FileText, 
-  MessageSquare, 
+import {
+  FileText,
+  MessageSquare,
   Lightbulb,
   CheckCircle2,
   ArrowRight,
@@ -123,7 +123,7 @@ const freeTools = [
       "12+ language support",
       "Copy or download as .txt",
       "In-memory caching for speed",
-      "No signup required"
+      "1 free transcription without signup"
     ],
     keywords: "free video transcript generator, video to text, youtube transcript, mp4 to text, video transcription free",
     monthlySearches: "12,000+",
@@ -134,11 +134,11 @@ const freeTools = [
 const faqData = [
   {
     question: "Are these LinkedIn tools really free?",
-    answer: "Yes! All our LinkedIn tools offer free access. The Post Generator, Comment Generator, and Idea Generator offer free usage without requiring signup. You can upgrade to premium plans for unlimited access and advanced features."
+    answer: "Yes! All our LinkedIn tools offer free access. The Post Generator, Comment Generator, Idea Generator, and Video Transcript tool offer free usage. You can upgrade to premium plans for unlimited access and advanced features."
   },
   {
     question: "Do I need to create an account to use free tools?",
-    answer: "No account required for most free tools! You can use the LinkedIn Post Generator, Comment Generator, and Idea Generator without signing up. Create a free account to save your work and unlock more features."
+    answer: "No account required for most free tools! You can use the LinkedIn Post Generator, Comment Generator, Idea Generator, and Video Transcript tool (1 free) without signing up. Create a free account to unlock more features."
   },
   {
     question: "What makes these LinkedIn tools different from others?",
@@ -209,7 +209,7 @@ const FreeTools = () => {
               Free LinkedIn Tools
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Boost your LinkedIn presence with our suite of free AI-powered tools. 
+              Boost your LinkedIn presence with our suite of free AI-powered tools.
               No credit card required. Start optimizing your profile and creating engaging content today.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
@@ -237,39 +237,37 @@ const FreeTools = () => {
             {freeTools.map((tool) => {
               const Icon = tool.icon;
               return (
-                <Link key={tool.id} to={tool.url} className="block group/link outline-none">
-                  <Card className="group relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-                    <div className={`absolute inset-0 bg-gradient-to-br ${tool.color} opacity-0 group-hover/link:opacity-5 transition-opacity duration-300`} />
-                    <CardHeader className="pb-4">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${tool.color} flex items-center justify-center shadow-lg transform group-hover/link:scale-110 transition-transform duration-300`}>
-                          <Icon className="w-7 h-7 text-white" />
-                        </div>
-                        <Badge variant="secondary" className="text-xs">
-                          {tool.monthlySearches} searches/month
-                        </Badge>
+                <Card key={tool.id} className="group relative overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-2xl">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${tool.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
+                  <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${tool.color} flex items-center justify-center shadow-lg`}>
+                        <Icon className="w-7 h-7 text-white" />
                       </div>
-                      <CardTitle className="text-2xl mb-2 group-hover/link:text-primary transition-colors">{tool.name}</CardTitle>
-                      <CardDescription className="text-base">{tool.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-2 mb-6">
-                        {tool.features.map((feature, index) => (
-                          <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <div className="w-full">
-                        <Button className="w-full group-hover/link:bg-primary group-hover/link:text-primary-foreground transition-colors" size="lg" variant="outline">
-                          Use Free Tool
-                          <ArrowRight className="ml-2 w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                      <Badge variant="secondary" className="text-xs">
+                        {tool.monthlySearches} searches/month
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-2xl mb-2">{tool.name}</CardTitle>
+                    <CardDescription className="text-base">{tool.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2 mb-6">
+                      {tool.features.map((feature, index) => (
+                        <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
+                          <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Link to={tool.url}>
+                      <Button className="w-full group/btn" size="lg">
+                        Use Free Tool
+                        <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
               );
             })}
           </div>

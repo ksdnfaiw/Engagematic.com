@@ -8,6 +8,7 @@ class TrialService {
       posts: 7, // 1 post per day for 7 days
       comments: 14, // 2 comments per day for 7 days
       ideas: -1, // UNLIMITED ideas for all users
+      transcripts: 3, // 3 transcripts for free users
     };
   }
 
@@ -120,6 +121,19 @@ class TrialService {
             };
           }
           break;
+
+        case "generate_transcript":
+          if (
+            subscription.usage.transcriptsGenerated >=
+            subscription.limits.transcriptsPerMonth
+          ) {
+            return {
+              allowed: false,
+              reason: "Trial transcription limit reached",
+              action: "upgrade",
+            };
+          }
+          break;
       }
 
       return { allowed: true };
@@ -150,6 +164,7 @@ class TrialService {
       subscription.usage.templatesUsed = 0;
       subscription.usage.linkedinAnalyses = 0;
       subscription.usage.profileAnalyses = 0;
+      subscription.usage.transcriptsGenerated = 0;
 
       await subscription.save();
 
@@ -188,11 +203,13 @@ class TrialService {
           posts: subscription.limits.postsPerMonth,
           comments: subscription.limits.commentsPerMonth,
           ideas: subscription.limits.ideasPerMonth,
+          transcripts: subscription.limits.transcriptsPerMonth,
         },
         usage: {
           posts: subscription.usage.postsGenerated,
           comments: subscription.usage.commentsGenerated,
           ideas: subscription.usage.ideasGenerated,
+          transcripts: subscription.usage.transcriptsGenerated,
         },
         remaining: {
           posts: Math.max(
@@ -208,6 +225,11 @@ class TrialService {
           ideas: subscription.limits.ideasPerMonth === -1
             ? -1
             : Math.max(0, subscription.limits.ideasPerMonth - subscription.usage.ideasGenerated),
+          transcripts: Math.max(
+            0,
+            subscription.limits.transcriptsPerMonth -
+              subscription.usage.transcriptsGenerated
+          ),
         },
         trialEndDate: trialEndDate,
       };
