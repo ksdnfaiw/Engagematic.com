@@ -83,9 +83,11 @@ class ApiClient {
       token = this.getToken();
     }
 
+    const isFormData = options.body instanceof FormData;
+    
     const config = {
       headers: {
-        "Content-Type": "application/json",
+        ...(!isFormData && { "Content-Type": "application/json" }),
         ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
@@ -968,6 +970,25 @@ class ApiClient {
   async deleteEmailTemplate(id) {
     return await this.request(`/admin/email-templates/${id}`, {
       method: "DELETE",
+    });
+  }
+
+  // Transcript methods
+  async transcribeUrl(url, lang) {
+    return this.request("/transcript/url", {
+      method: "POST",
+      body: JSON.stringify({ url, lang }),
+    });
+  }
+
+  async transcribeUpload(file, lang) {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (lang) formData.append("lang", lang);
+    
+    return this.request("/transcript/upload", {
+      method: "POST",
+      body: formData,
     });
   }
 }

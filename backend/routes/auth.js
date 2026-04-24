@@ -190,9 +190,9 @@ router.post("/register", validateUserRegistration, async (req, res) => {
 // Google OAuth - verify token, create or log in user
 router.post("/google", async (req, res) => {
   try {
-    const { credential, access_token, tokenOrCode, redirect_uri, referralCode } = req.body;
+    const { credential, access_token, tokenOrCode, code: bodyCode, redirect_uri, referralCode } = req.body;
 
-    const code = tokenOrCode
+    const code = tokenOrCode || bodyCode;
     console.log(access_token)
     console.log(credential)
 

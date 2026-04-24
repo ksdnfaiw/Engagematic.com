@@ -34,6 +34,8 @@ import {
   Info,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import apiClient from "@/services/api";
+
 
 // API Base URL (same resolution as apiClient)
 // ─────────────────────────────────────────────
@@ -216,23 +218,14 @@ const VideoTranscriptTool = () => {
     setIsCached(false);
 
     try {
-      const res = await fetch(`${API_BASE}/transcript/url`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: videoUrl.trim(), lang: language }),
-      });
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        setError(data.message || "Something went wrong. Please try again.");
-        return;
-      }
+      const data = await apiClient.transcribeUrl(videoUrl.trim(), language);
+      
       setTranscript(data.transcript);
       setTranscriptLang(data.language || language);
       setIsPartial(data.partial || false);
       setIsCached(data.cached || false);
-    } catch {
-      setError("Network error - please check your connection and try again.");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -249,26 +242,14 @@ const VideoTranscriptTool = () => {
     setIsCached(false);
 
     try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-      formData.append("lang", language);
+      const data = await apiClient.transcribeUpload(selectedFile, language);
 
-      const res = await fetch(`${API_BASE}/transcript/upload`, {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        setError(data.message || "Transcription failed for this file. Please try another format.");
-        return;
-      }
       setTranscript(data.transcript);
       setTranscriptLang(data.language || language);
       setIsPartial(data.partial || false);
       setIsCached(false);
-    } catch {
-      setError("Network error - please check your connection and try again.");
+    } catch (err: any) {
+      setError(err.message || "Transcription failed for this file. Please try another format.");
     } finally {
       setLoading(false);
     }

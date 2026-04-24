@@ -3,7 +3,7 @@ import { OnboardingModal } from "@/components/OnboardingModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { LogoWithText } from "@/components/LogoWithText";
-import { LayoutDashboard, Home, User, LogOut, Lightbulb, FileText, MessageSquare, Menu, X, Calendar, Loader2, Crown } from "lucide-react";
+import { LayoutDashboard, Home, User, LogOut, Lightbulb, FileText, MessageSquare, Menu, X, Calendar, Loader2, Crown, FileVideo } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSubscription } from "@/hooks/useSubscription";
 
@@ -35,6 +35,7 @@ export const DashboardLayout = () => {
     { path: "/post-generator", label: "Post Generator", icon: FileText, premiumOnly: false },
     { path: "/comment-generator", label: "Comment Generator", icon: MessageSquare, premiumOnly: false },
     { path: "/content-planner", label: "Content Planner", icon: Calendar, premiumOnly: true },
+    { path: "/tools/video-transcript-generator", label: "Video Transcript", icon: FileVideo, premiumOnly: false },
   ] as const;
 
   // Save sidebar state to localStorage
