@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { X, Gift, Users, Star, FileText, MessageSquare, Lightbulb, BarChart3, Type, FileVideo } from "lucide-react";
+import { X, Gift, Users, Star, FileText, MessageSquare, Lightbulb, BarChart3, Type, FileVideo, Instagram } from "lucide-react";
 import { LogoWithText } from "../LogoWithText";
 
 export const Footer = () => {
@@ -80,6 +80,7 @@ export const Footer = () => {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link to="/tools" className="hover:text-foreground transition-smooth flex items-center gap-2"><FileText className="h-3 w-3 shrink-0" /> All LinkedIn Free Tools</Link></li>
                 <li><Link to="/tools/video-transcript-generator" className="hover:text-foreground transition-smooth flex items-center gap-2"><FileVideo className="h-3 w-3 shrink-0" /> Video Transcript Generator</Link></li>
+                <li><Link to="/tools/instagram-transcript-generator" className="hover:text-foreground transition-smooth flex items-center gap-2"><Instagram className="h-3 w-3 shrink-0" /> Instagram Transcriber</Link></li>
                 <li><Link to="/tools/linkedin-post-generator" className="hover:text-foreground transition-smooth flex items-center gap-2"><FileText className="h-3 w-3 shrink-0" /> LinkedIn Post Generator</Link></li>
                 <li><Link to="/tools/linkedin-engagement-rate-calculator" className="hover:text-foreground transition-smooth flex items-center gap-2"><BarChart3 className="h-3 w-3 shrink-0" /> LinkedIn Engagement Calculator</Link></li>
                 <li><Link to="/tools/linkedin-text-formatter" className="hover:text-foreground transition-smooth flex items-center gap-2"><Type className="h-3 w-3 shrink-0" /> LinkedIn Text Formatter</Link></li>
