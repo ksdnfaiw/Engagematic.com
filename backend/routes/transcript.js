@@ -12,10 +12,12 @@ import axios from "axios";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
+import { spawn } from "child_process";
 import jwt from "jsonwebtoken";
 import UserSubscription from "../models/UserSubscription.js";
 import User from "../models/User.js";
 import { config } from "../config/index.js";
+import googleAIService from "../services/googleAI.js";
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -534,6 +536,245 @@ router.post("/upload", (req, res, next) => {
     // Always clean up the uploaded file
     try { if (fs.existsSync(filePath)) fs.unlinkSync(filePath); } catch {}
   }
+});
+
+// Find python executable on Windows
+function getPythonCommand() {
+  if (process.platform === "win32") {
+    const userProfile = process.env.USERPROFILE || "";
+    const baseDir = path.join(userProfile, "AppData", "Local", "Programs", "Python");
+    try {
+      if (fs.existsSync(baseDir)) {
+        const dirs = fs.readdirSync(baseDir);
+        for (const dir of dirs) {
+          if (dir.toLowerCase().startsWith("python")) {
+            const pyPath = path.join(baseDir, dir, "python.exe");
+            if (fs.existsSync(pyPath)) {
+              return pyPath;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Error searching python installation paths:", e);
+    }
+  }
+  return "python";
+}
+
+// ─────────────────────────────────────────────
+// POST /api/transcript/local
+// Body: { url: string, model?: string, lang?: string, mode?: "local" | "cloud" }
+// ─────────────────────────────────────────────
+router.post("/local", async (req, res) => {
+  const { url, model = "small", lang = "auto", mode = "cloud" } = req.body;
+
+  if (!url || typeof url !== "string" || !url.trim()) {
+    return res.status(400).json({
+      success: false,
+      error: "INVALID_INPUT",
+      message: "Please provide an Instagram video URL.",
+    });
+  }
+
+  const pyCmd = getPythonCommand();
+
+  // Mode: Cloud (Gemini-powered)
+  if (mode === "cloud") {
+    console.log(`[Cloud Transcript] Downloading audio track for Instagram URL: ${url}`);
+    const downloadScript = path.join(__dirname, "..", "scripts", "instagram_download.py");
+    
+    let stdoutData = "";
+    let stderrData = "";
+    let processError = null;
+
+    const child = spawn(pyCmd, [downloadScript, url]);
+
+    child.stdout.on("data", (data) => {
+      stdoutData += data.toString();
+    });
+
+    child.stderr.on("data", (data) => {
+      stderrData += data.toString();
+    });
+
+    child.on("error", (err) => {
+      processError = err;
+    });
+
+    child.on("close", async (code) => {
+      if (processError) {
+        console.error("[Cloud Transcript] Child process error:", processError);
+        if (processError.code === "ENOENT") {
+          return res.status(500).json({
+            success: false,
+            error: "PYTHON_NOT_FOUND",
+            message: "Python was not found on your system. Please install Python 3.9+ to enable download utility.",
+          });
+        }
+        return res.status(500).json({
+          success: false,
+          error: "EXECUTION_ERROR",
+          message: `Failed to spawn download script: ${processError.message}`,
+        });
+      }
+
+      if (code !== 0) {
+        console.error(`[Cloud Transcript] Download failed with code ${code}. Stderr: ${stderrData}`);
+        return res.status(500).json({
+          success: false,
+          error: "DOWNLOAD_FAILED",
+          message: `Audio download failed. Check if yt-dlp is installed and the post is public.`,
+          details: stderrData || stdoutData,
+        });
+      }
+
+      try {
+        const result = JSON.parse(stdoutData.trim());
+        if (!result.success) {
+          return res.status(400).json({
+            success: false,
+            error: result.error_code || "DOWNLOAD_FAILED",
+            message: result.error || "Failed to download audio track.",
+          });
+        }
+
+        const audioPath = result.audio_path;
+        console.log(`[Cloud Transcript] Audio downloaded successfully to ${audioPath}. Transcribing via Gemini...`);
+
+        // Send to Gemini service
+        const mimeType = "audio/mp3";
+        const aiResponse = await googleAIService.transcribeAudio(audioPath, mimeType);
+
+        // Delete temporary audio track
+        try {
+          fs.unlinkSync(audioPath);
+        } catch (err) {
+          console.error("Failed to delete temp audio path:", err);
+        }
+
+        return res.json({
+          success: true,
+          transcript: aiResponse.transcript,
+          language: lang,
+          durationSeconds: result.duration,
+          title: result.title,
+        });
+
+      } catch (err) {
+        console.error("Gemini Cloud Transcription Error:", err);
+        return res.status(500).json({
+          success: false,
+          error: "CLOUD_TRANSCRIPTION_FAILED",
+          message: `Cloud transcription failed: ${err.message}`,
+        });
+      }
+    });
+    return;
+  }
+
+  // Mode: Local (Whisper local execution)
+  const scriptPath = path.join(__dirname, "..", "scripts", "instagram_transcribe.py");
+  console.log(`Spawning local transcription process: ${pyCmd} ${scriptPath} "${url}" --model ${model} --language ${lang}`);
+
+  let stdoutData = "";
+  let stderrData = "";
+  let processError = null;
+
+  const whisperLanguage = lang === "auto" ? "auto" : lang;
+  const args = [scriptPath, url, "--model", model];
+  if (whisperLanguage && whisperLanguage !== "auto") {
+    args.push("--language", whisperLanguage);
+  }
+
+  const child = spawn(pyCmd, args);
+
+  child.stdout.on("data", (data) => {
+    stdoutData += data.toString();
+    console.log(`[Python Stdout] ${data.toString().trim()}`);
+  });
+
+  child.stderr.on("data", (data) => {
+    stderrData += data.toString();
+    console.warn(`[Python Stderr] ${data.toString().trim()}`);
+  });
+
+  child.on("error", (err) => {
+    processError = err;
+  });
+
+  child.on("close", (code) => {
+    if (processError) {
+      console.error("Local transcript child process error:", processError);
+      if (processError.code === "ENOENT") {
+        return res.status(500).json({
+          success: false,
+          error: "PYTHON_NOT_FOUND",
+          message: "Python was not found on your system. Please install Python 3.9+ and add it to your PATH.",
+        });
+      }
+      return res.status(500).json({
+        success: false,
+        error: "EXECUTION_ERROR",
+        message: `Failed to spawn transcription script: ${processError.message}`,
+      });
+    }
+
+    if (code !== 0) {
+      console.error(`Local transcript process exited with code ${code}. Stderr: ${stderrData}`);
+      return res.status(500).json({
+        success: false,
+        error: "TRANSCRIPTION_FAILED",
+        message: `Local transcription process exited with code ${code}. Check if ffmpeg, yt-dlp, and whisper are installed.`,
+        details: stderrData || stdoutData,
+      });
+    }
+
+    // Process output
+    const lines = stdoutData.split("\n");
+    let resultJson = null;
+
+    for (const line of lines) {
+      if (line.startsWith("[RESULT]")) {
+        try {
+          const jsonStr = line.slice(8).trim();
+          resultJson = JSON.parse(jsonStr);
+        } catch (e) {
+          console.error("Error parsing JSON result from python script:", e);
+        }
+      }
+    }
+
+    if (!resultJson) {
+      return res.status(500).json({
+        success: false,
+        error: "NO_RESULT",
+        message: "Transcription script finished but returned no valid result.",
+        details: stdoutData,
+      });
+    }
+
+    if (!resultJson.success) {
+      const errCode = resultJson.error_code || "TRANSCRIPTION_ERROR";
+      let status = 500;
+      if (["YT_DLP_MISSING", "WHISPER_MISSING", "FFMPEG_MISSING"].includes(errCode)) {
+        status = 400; // Client/system setup configuration error
+      }
+      return res.status(status).json({
+        success: false,
+        error: errCode,
+        message: resultJson.error || "Local transcription execution error.",
+      });
+    }
+
+    return res.json({
+      success: true,
+      transcript: resultJson.transcript,
+      language: resultJson.language,
+      durationSeconds: resultJson.duration,
+      title: resultJson.title,
+    });
+  });
 });
 
 export default router;

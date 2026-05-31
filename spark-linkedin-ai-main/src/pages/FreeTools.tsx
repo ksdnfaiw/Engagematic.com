@@ -15,7 +15,8 @@ import {
   Users,
   BarChart3,
   Type,
-  FileVideo
+  FileVideo,
+  Instagram
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -128,6 +129,24 @@ const freeTools = [
     keywords: "free video transcript generator, video to text, youtube transcript, mp4 to text, video transcription free",
     monthlySearches: "12,000+",
     color: "from-cyan-500 to-blue-500"
+  },
+  {
+    id: "instagram-transcript",
+    name: "Free Instagram Transcript Generator",
+    description: "Extract the audio track and transcribe speech from any Instagram Reel, Post, or IGTV to text. 100% free with local execution and no token limits.",
+    icon: Instagram,
+    url: "/tools/instagram-transcript-generator",
+    features: [
+      "Instagram Reels, Posts & IGTV URLs",
+      "Runs locally on your computer",
+      "5 Whisper models (Tiny to Large)",
+      "12+ language support & Auto-detect",
+      "Copy or download transcript as .txt",
+      "100% free with unlimited access"
+    ],
+    keywords: "instagram transcript generator, transcribe instagram reel, instagram to text free, local whisper transcription",
+    monthlySearches: "15,000+",
+    color: "from-purple-500 to-pink-500"
   }
 ];
 

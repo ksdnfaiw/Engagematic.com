@@ -991,6 +991,13 @@ class ApiClient {
       body: formData,
     });
   }
+
+  async transcribeInstagramLocal(url, model, lang, mode = "cloud") {
+    return this.request("/transcript/local", {
+      method: "POST",
+      body: JSON.stringify({ url, model, lang, mode }),
+    });
+  }
 }
 
 export default new ApiClient();

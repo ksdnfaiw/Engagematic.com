@@ -30,6 +30,7 @@ const LinkedInPostGeneratorTool = lazy(() => import("./pages/tools/LinkedInPostG
 const LinkedInEngagementCalculator = lazy(() => import("./pages/tools/LinkedInEngagementCalculator"));
 const LinkedInTextFormatter = lazy(() => import("./pages/tools/LinkedInTextFormatter"));
 const VideoTranscriptTool = lazy(() => import("./pages/tools/VideoTranscriptTool"));
+const InstagramTranscriptTool = lazy(() => import("./pages/tools/InstagramTranscriptTool"));
 import { ErrorBoundary } from "./components/ErrorBoundary";
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
@@ -184,6 +185,7 @@ const App = () => (
                     <Route path="/comment-generator" element={<CommentGenerator />} />
                     <Route path="/content-planner" element={<ContentPlanner />} />
                     <Route path="/tools/video-transcript-generator" element={<VideoTranscriptTool />} />
+                    <Route path="/tools/instagram-transcript-generator" element={<InstagramTranscriptTool />} />
                   </Route>
                   {/* Blog Routes */}
                   {/* Static Pages */}

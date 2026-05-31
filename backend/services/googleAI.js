@@ -445,6 +445,49 @@ RULES:
     }
   }
 
+  async transcribeAudio(audioPath, mimeType = "audio/mp3") {
+    try {
+      console.log(`🤖 Transcribing audio with Google AI (Gemini)... path: ${audioPath}`);
+      const fs = await import("fs");
+      const audioBuffer = fs.readFileSync(audioPath);
+      const base64Audio = audioBuffer.toString("base64");
+
+      const prompt = "Provide a highly accurate, complete, word-for-word transcript of this audio clip. Do not summarize, do not omit any words, and do not add any comments or introductions. Return ONLY the transcribed text.";
+
+      const requestOptions = {
+        contents: [
+          {
+            parts: [
+              {
+                inlineData: {
+                  data: base64Audio,
+                  mimeType,
+                },
+              },
+              { text: prompt },
+            ],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.2,
+        },
+      };
+
+      const { result } = await this._generateWithFallback(requestOptions);
+      console.log("✅ Google AI transcription response received");
+      
+      const transcriptText = this._getResponseText(result);
+      return {
+        success: true,
+        transcript: transcriptText.trim(),
+        tokensUsed: result.response?.usageMetadata?.totalTokenCount || 0,
+      };
+    } catch (error) {
+      console.error("❌ Google AI Transcription Error:", error.message);
+      throw error;
+    }
+  }
+
   async generateComment(
     postContent,
     persona,
