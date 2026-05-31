@@ -133,18 +133,18 @@ const freeTools = [
   {
     id: "instagram-transcript",
     name: "Free Instagram Transcript Generator",
-    description: "Extract the audio track and transcribe speech from any Instagram Reel, Post, or IGTV to text. 100% free with local execution and no token limits.",
+    description: "Extract and transcribe speech from any Instagram Reel, Post, or IGTV to text instantly. 100% free with high-accuracy Cloud AI.",
     icon: Instagram,
     url: "/tools/instagram-transcript-generator",
     features: [
       "Instagram Reels, Posts & IGTV URLs",
-      "Runs locally on your computer",
-      "5 Whisper models (Tiny to Large)",
+      "High-accuracy cloud speech recognition",
+      "No signup or account required",
       "12+ language support & Auto-detect",
       "Copy or download transcript as .txt",
       "100% free with unlimited access"
     ],
-    keywords: "instagram transcript generator, transcribe instagram reel, instagram to text free, local whisper transcription",
+    keywords: "instagram transcript generator, transcribe instagram reel, instagram to text free, transcribe reel online",
     monthlySearches: "15,000+",
     color: "from-purple-500 to-pink-500"
   }

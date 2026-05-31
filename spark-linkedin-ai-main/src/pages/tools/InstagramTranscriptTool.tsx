@@ -18,8 +18,6 @@ import {
   Copy,
   Download,
   Loader2,
-  Terminal,
-  Cpu,
   ArrowRight,
   HelpCircle,
   Play,
@@ -48,28 +46,18 @@ const LANGUAGES = [
   { value: "gu", label: "Gujarati" }
 ];
 
-const WHISPER_MODELS = [
-  { id: "tiny", name: "Tiny", size: "39 MB", speed: "Very Fast", accuracy: "★★☆", desc: "Lowest resources, best for fast testing." },
-  { id: "base", name: "Base", size: "74 MB", speed: "Fast", accuracy: "★★☆", desc: "Good speed, basic transcription." },
-  { id: "small", name: "Small", size: "244 MB", speed: "Balanced", accuracy: "★★★", desc: "Recommended balance of speed & quality." },
-  { id: "medium", name: "Medium", size: "769 MB", speed: "Slow", accuracy: "★★★★", desc: "High accuracy, requires more RAM/VRAM." },
-  { id: "large", name: "Large", size: "1.5 GB", speed: "Very Slow", accuracy: "★★★★★", desc: "Best quality, highly resource-intensive." },
-];
-
 const LOADING_STEPS = [
-  "Initializing local subprocess...",
-  "Running yt-dlp to download Instagram video audio track...",
-  "Extracting audio stream to temporary media file...",
-  "Loading local OpenAI Whisper neural network into memory...",
-  "Running local speech-to-text inference (transcribing spoken words)...",
-  "Finishing up, cleaning temporary media files..."
+  "Connecting to Instagram servers...",
+  "Retrieving public post metadata...",
+  "Extracting high-quality audio track...",
+  "Analyzing speech frequencies...",
+  "Transcribing words via Google Gemini AI...",
+  "Polishing and formatting the final transcript..."
 ];
 
 export default function InstagramTranscriptTool() {
   const [url, setUrl] = useState("");
-  const [model, setModel] = useState("small");
   const [language, setLanguage] = useState("auto");
-  const [mode, setMode] = useState<"cloud" | "local">("cloud");
   
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
@@ -82,13 +70,13 @@ export default function InstagramTranscriptTool() {
   
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  // Rotate loading steps message every 8 seconds when loading
+  // Rotate loading steps message every 6 seconds when loading
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (loading) {
       interval = setInterval(() => {
         setLoadingStep((prev) => (prev + 1) % LOADING_STEPS.length);
-      }, 7000);
+      }, 6000);
     } else {
       setLoadingStep(0);
     }
@@ -123,7 +111,8 @@ export default function InstagramTranscriptTool() {
     setTranscript("");
 
     try {
-      const response = await apiClient.transcribeInstagramLocal(url.trim(), model, language, mode);
+      // Force "cloud" mode and "small" model (small is fallback/default for local Whisper, ignored in cloud mode)
+      const response = await apiClient.transcribeInstagramLocal(url.trim(), "small", language, "cloud");
       if (response.success) {
         setTranscript(response.transcript);
         setTranscriptLang(response.language || language);
@@ -139,7 +128,7 @@ export default function InstagramTranscriptTool() {
         setErrorMsg(errData.message || "An unexpected error occurred during execution.");
       } catch {
         setErrorType("EXECUTION_ERROR");
-        setErrorMsg(err.message || "Could not connect to the local server. Make sure the backend is running.");
+        setErrorMsg(err.message || "Could not connect to the transcription server. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -171,15 +160,19 @@ export default function InstagramTranscriptTool() {
   const faqData = [
     {
       question: "Is this transcript tool really free?",
-      answer: "Yes! Because it runs directly on your computer's hardware using open-source tools (yt-dlp and OpenAI Whisper), there are no API keys, cloud token charges, or limits on video length or quantity.",
+      answer: "Yes! The tool is 100% free to use. There are no registration forms, no hidden subscriptions, and no daily limits on the number of transcripts you can generate.",
     },
     {
-      question: "Why does it say Python or ffmpeg was not found?",
-      answer: "This tool runs the speech-to-text neural network locally on your machine instead of sending data to the cloud. For it to work, you must install Python (version 3.9+) and ffmpeg on your system, and then install the required Python libraries.",
+      question: "How long does the transcription process take?",
+      answer: "Since it is powered by high-speed Cloud AI (Gemini Flash), the entire process—from audio extraction to text generation—typically takes between 10 to 20 seconds depending on the length of the video.",
     },
     {
-      question: "How long does local transcription take?",
-      answer: "This depends on the length of the video and your machine's CPU/GPU. The 'small' Whisper model typically transcribes a 1-minute video in about 20-40 seconds. The first run will also take extra time to automatically download the selected model files from OpenAI.",
+      question: "Are private Instagram accounts supported?",
+      answer: "No, the tool requires access to public Instagram URLs so that our server can securely retrieve the audio track. Reels and posts from private accounts cannot be accessed.",
+    },
+    {
+      question: "Is my data stored or kept private?",
+      answer: "We prioritize your privacy. The audio track is fetched temporarily to process the transcription, and it is instantly and permanently deleted from our server immediately after the text is generated.",
     },
   ];
   
@@ -189,8 +182,8 @@ export default function InstagramTranscriptTool() {
     <div className="min-h-screen bg-gradient-to-b from-background via-purple-500/5 to-background">
       <SEO
         title="Free Instagram Transcript Generator – Reels, Post, IGTV | Engagematic"
-        description="Paste any Instagram Reel, Post, or IGTV URL and get a full text transcript instantly. 100% free, run locally on your machine with no token limits or API keys."
-        keywords="instagram transcript generator, transcribe instagram reel, instagram to text free, local whisper transcription, transcribe reel offline, instagram audio extractor"
+        description="Paste any Instagram Reel, Post, or IGTV URL and get a full high-accuracy text transcript instantly. 100% free, fast Cloud AI transcription with no signup required."
+        keywords="instagram transcript generator, transcribe instagram reel, instagram to text free, gemini audio transcription, transcribe reel online, instagram audio extractor"
         url={`${SITE_URL}/tools/instagram-transcript-generator`}
         structuredData={[breadcrumbSchema, faqSchema]}
       />
@@ -201,20 +194,20 @@ export default function InstagramTranscriptTool() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 max-w-4xl text-center">
           <Badge className="mb-4 bg-purple-500/10 text-purple-600 border-purple-500/20 inline-flex items-center gap-1.5 py-1 px-3">
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-            100% Free · Local Execution · No Cloud Token Limits
+            100% Free · Cloud Fast · No Account Required
           </Badge>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-5 text-gradient-premium-world-class tracking-tight leading-tight">
             Instagram Transcript Generator
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
-            Paste any Instagram Reel, Post, or IGTV link. Extract the audio track and transcribe speech to text locally on your hardware.
+            Paste any Instagram Reel, Post, or IGTV link. Get a high-accuracy text transcript generated in seconds by advanced speech AI.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-5 text-sm text-muted-foreground mt-4">
             {[
               { icon: Instagram, label: "Reels, Posts & IGTV supported" },
-              { icon: Cpu, label: "Local AI (OpenAI Whisper)" },
-              { icon: Shield, label: "100% private, no cloud storage" },
+              { icon: Sparkles, label: "Advanced Cloud Speech AI" },
+              { icon: Shield, label: "100% private, instant temp cleanup" },
             ].map(({ icon: Icon, label }) => (
               <div key={label} className="flex items-center gap-1.5">
                 <Icon className="w-4.5 h-4.5 text-purple-500" />
@@ -235,59 +228,11 @@ export default function InstagramTranscriptTool() {
                 Transcribe Instagram Content
               </CardTitle>
               <CardDescription>
-                {mode === "cloud" 
-                  ? "Transcribe using Google's Gemini Flash AI. 100% free and runs in the cloud instantly." 
-                  : "Transcribe using local Whisper model. Offline execution running on your machine hardware."
-                }
+                Transcribe any public Instagram video instantly. Best for repurposing video content into social posts.
               </CardDescription>
             </CardHeader>
             
             <CardContent className="space-y-6">
-              {/* Mode Toggle Selector */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-foreground/95">
-                  Transcription Engine
-                </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setMode("cloud")}
-                    className={`flex flex-col items-center p-3 rounded-xl border text-center transition-all duration-200 ${
-                      mode === "cloud"
-                        ? "border-purple-500 bg-purple-500/5 ring-1 ring-purple-500 font-bold"
-                        : "border-border hover:border-purple-300 hover:bg-purple-500/[0.01]"
-                    }`}
-                    disabled={loading}
-                  >
-                    <span className="text-sm flex items-center gap-1.5 justify-center">
-                      <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                      Cloud AI (Gemini)
-                    </span>
-                    <span className="text-[10px] text-muted-foreground mt-1">
-                      Fast & Free · Online
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMode("local")}
-                    className={`flex flex-col items-center p-3 rounded-xl border text-center transition-all duration-200 ${
-                      mode === "local"
-                        ? "border-purple-500 bg-purple-500/5 ring-1 ring-purple-500 font-bold"
-                        : "border-border hover:border-purple-300 hover:bg-purple-500/[0.01]"
-                    }`}
-                    disabled={loading}
-                  >
-                    <span className="text-sm flex items-center gap-1.5 justify-center">
-                      <Cpu className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                      Local AI (Whisper)
-                    </span>
-                    <span className="text-[10px] text-muted-foreground mt-1">
-                      Runs on your Machine
-                    </span>
-                  </button>
-                </div>
-              </div>
-
               {/* URL Input */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-foreground/95" htmlFor="instagram-url">
@@ -298,7 +243,7 @@ export default function InstagramTranscriptTool() {
                   <Input
                     id="instagram-url"
                     type="url"
-                    placeholder="https://www.instagram.com/reel/C8aBcdEfGhI/..."
+                    placeholder="https://www.instagram.com/reel/DYNAXWGMYPc/..."
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !loading && handleGenerate()}
@@ -307,44 +252,6 @@ export default function InstagramTranscriptTool() {
                   />
                 </div>
               </div>
-
-              {/* Model Choice (Premium Grid - Only show in Local Mode) */}
-              {mode === "local" && (
-                <div className="space-y-2 animate-fade-in">
-                  <label className="text-sm font-semibold text-foreground/95">
-                    Whisper Model Size
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
-                    {WHISPER_MODELS.map((m) => {
-                      const isSelected = model === m.id;
-                      return (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => !loading && setModel(m.id)}
-                          className={`flex flex-col items-center justify-between p-3 rounded-xl border text-center transition-all duration-200 ${
-                            isSelected
-                              ? "border-purple-500 bg-purple-500/5 shadow-md shadow-purple-500/5 ring-1 ring-purple-500"
-                              : "border-border hover:border-purple-300 hover:bg-purple-500/[0.01]"
-                          }`}
-                          disabled={loading}
-                        >
-                          <span className="font-bold text-sm">{m.name}</span>
-                          <span className="text-[11px] text-muted-foreground mt-1">{m.size}</span>
-                          <div className="flex items-center gap-0.5 mt-2">
-                            <span className="text-[10px] text-purple-600 dark:text-purple-400 font-medium">
-                              {m.speed}
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    * Note: Larger models offer higher transcription accuracy but require significantly more RAM/VRAM and take longer to download and process.
-                  </p>
-                </div>
-              )}
 
               {/* Language Selection & Submit */}
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -372,7 +279,7 @@ export default function InstagramTranscriptTool() {
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      {mode === "cloud" ? "Transcribing in cloud..." : "Processing locally..."}
+                      Generating Transcript...
                     </>
                   ) : (
                     <>
@@ -389,23 +296,15 @@ export default function InstagramTranscriptTool() {
                   <div className="flex items-center gap-3">
                     <Loader2 className="w-5 h-5 text-purple-500 animate-spin flex-shrink-0" />
                     <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">
-                      {mode === "cloud" ? "Cloud Transcription Progress" : "Local Transcription Progress"}
+                      Transcription Progress
                     </span>
                   </div>
                   <div className="pl-8 space-y-1">
                     <p className="text-sm font-medium text-foreground">
-                      {mode === "cloud"
-                        ? loadingStep <= 2 
-                          ? LOADING_STEPS[loadingStep] 
-                          : "Transcribing audio via Gemini 2.0 Flash..."
-                        : LOADING_STEPS[loadingStep]
-                      }
+                      {LOADING_STEPS[loadingStep]}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {mode === "cloud"
-                        ? "Gemini Cloud Transcription is extremely fast and takes about 10-20 seconds on average."
-                        : "Whisper model loading/transcribing can take anywhere from 30 seconds to a few minutes depending on media size and model speed."
-                      }
+                      Our Cloud speech AI is transcribing the video. This usually takes 10-20 seconds.
                     </p>
                   </div>
                 </div>
@@ -420,60 +319,14 @@ export default function InstagramTranscriptTool() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
           {/* Error Alert Box */}
           {errorMsg && !loading && (
-            <div className="space-y-4">
-              <Alert variant="destructive" className="border-destructive/30 bg-destructive/5 animate-fade-in-up">
+            <div className="space-y-4 animate-fade-in-up">
+              <Alert variant="destructive" className="border-destructive/30 bg-destructive/5">
                 <AlertCircle className="h-4.5 w-4.5" />
-                <AlertTitle className="font-bold">Execution Error</AlertTitle>
+                <AlertTitle className="font-bold">Transcription Failed</AlertTitle>
                 <AlertDescription className="text-sm mt-1 whitespace-pre-line">
                   {errorMsg}
                 </AlertDescription>
               </Alert>
-
-              {/* Setup guide if dependency is missing */}
-              {["PYTHON_NOT_FOUND", "YT_DLP_MISSING", "WHISPER_MISSING", "FFMPEG_MISSING"].includes(errorType || "") && (
-                <Card className="border border-amber-500/25 bg-amber-500/[0.02] shadow-md">
-                  <CardHeader className="pb-3 flex-row items-center gap-2">
-                    <Terminal className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                    <div>
-                      <CardTitle className="text-base font-bold text-amber-800 dark:text-amber-300">
-                        Local Dependencies Setup Guide
-                      </CardTitle>
-                      <CardDescription className="text-xs text-amber-700/70 dark:text-amber-400/70">
-                        This tool runs local computations. Follow these steps to install the missing libraries.
-                      </CardDescription>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4 text-sm text-foreground/80">
-                    <div className="space-y-2">
-                      <p className="font-semibold text-foreground">1. Install Python 3.9+</p>
-                      <p className="text-xs text-muted-foreground pl-3">
-                        Download and install Python from <a href="https://python.org" target="_blank" rel="noreferrer" className="text-purple-600 hover:underline">python.org</a>. **Make sure to check the box "Add Python to PATH" during installation.**
-                      </p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <p className="font-semibold text-foreground">2. Install ffmpeg (Audio Transcoding utility)</p>
-                      <div className="bg-muted p-2 rounded-md font-mono text-xs pl-3 border flex flex-col gap-1.5">
-                        <div>**Windows (CMD/PowerShell)**:</div>
-                        <code className="text-purple-600">winget install ffmpeg</code>
-                        <div className="mt-1">**macOS (Terminal)**:</div>
-                        <code className="text-purple-600">brew install ffmpeg</code>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className="font-semibold text-foreground">3. Install Python libraries</p>
-                      <div className="bg-muted p-2 rounded-md font-mono text-xs pl-3 border">
-                        <code className="text-purple-600">pip install yt-dlp openai-whisper gradio</code>
-                      </div>
-                    </div>
-
-                    <div className="pt-2 text-xs text-amber-700 dark:text-amber-400/80">
-                      ℹ️ Once the installations are complete, restart your terminal/IDE servers and refresh this page.
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
             </div>
           )}
 
@@ -569,9 +422,9 @@ export default function InstagramTranscriptTool() {
       <section className="py-14 bg-muted/40 border-y">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
           <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-2">How Local Transcription Works</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2">How it Works</h2>
             <p className="text-muted-foreground text-sm max-w-xl mx-auto">
-              A private, secure pipeline running speech AI entirely offline inside your server setup.
+              A private, secure pipeline running high-performance Speech AI entirely in the cloud.
             </p>
           </div>
 
@@ -579,20 +432,20 @@ export default function InstagramTranscriptTool() {
             {[
               {
                 step: "1",
-                title: "Extract Instagram Audio",
-                desc: "The server executes yt-dlp to access the public post URL and extracts the highest-quality audio track to a temporary media file.",
-                icon: Download,
+                title: "Paste URL Link",
+                desc: "Enter the link of any public Instagram Reel, Post, or IGTV video that contains spoken voice.",
+                icon: Instagram,
               },
               {
                 step: "2",
-                title: "Run local Whisper AI",
-                desc: "Your machine loads OpenAI's neural speech recognition network. It processes the raw audio, executing transcription calculations locally.",
-                icon: Cpu,
+                title: "Cloud AI Processing",
+                desc: "Our server securely extracts the audio track and transcribes the speech into text in real-time.",
+                icon: Sparkles,
               },
               {
                 step: "3",
-                title: "Return Text & Cleanup",
-                desc: "Once done, the script outputs the full transcript text, cleanly deletes all temporary media downloads, and updates the dashboard UI.",
+                title: "Format & Repurpose",
+                desc: "Download the text instantly or send it directly to our LinkedIn AI generator to create viral content.",
                 icon: CheckCircle2,
               },
             ].map(({ step, title, desc, icon: Icon }) => (

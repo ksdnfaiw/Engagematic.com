@@ -18,6 +18,7 @@ import UserSubscription from "../models/UserSubscription.js";
 import User from "../models/User.js";
 import { config } from "../config/index.js";
 import googleAIService from "../services/googleAI.js";
+import https from "https";
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -562,6 +563,58 @@ function getPythonCommand() {
   return "python";
 }
 
+// Self-healing yt-dlp binary check/download
+const BIN_DIR = path.join(__dirname, "..", "bin");
+const YTDLP_PATH = path.join(BIN_DIR, process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp");
+
+async function ensureYtdlp() {
+  if (fs.existsSync(YTDLP_PATH)) {
+    return YTDLP_PATH;
+  }
+
+  if (!fs.existsSync(BIN_DIR)) {
+    fs.mkdirSync(BIN_DIR, { recursive: true });
+  }
+
+  const url = process.platform === "win32"
+    ? "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe"
+    : "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp";
+
+  console.log(`[Self-Healing] Downloading yt-dlp binary from ${url}...`);
+  
+  try {
+    const response = await axios({
+      method: "get",
+      url: url,
+      responseType: "stream"
+    });
+
+    return new Promise((resolve, reject) => {
+      const file = fs.createWriteStream(YTDLP_PATH);
+      response.data.pipe(file);
+      file.on("finish", () => {
+        file.close();
+        if (process.platform !== "win32") {
+          fs.chmodSync(YTDLP_PATH, "755"); // Make executable
+        }
+        console.log("[Self-Healing] yt-dlp binary downloaded successfully.");
+        resolve(YTDLP_PATH);
+      });
+      file.on("error", (err) => {
+        try {
+          if (fs.existsSync(YTDLP_PATH)) {
+            fs.unlinkSync(YTDLP_PATH);
+          }
+        } catch (_) {}
+        reject(err);
+      });
+    });
+  } catch (err) {
+    console.error(`[Self-Healing] Failed to download yt-dlp: ${err.message}`);
+    throw err;
+  }
+}
+
 // ─────────────────────────────────────────────
 // POST /api/transcript/local
 // Body: { url: string, model?: string, lang?: string, mode?: "local" | "cloud" }
@@ -577,103 +630,107 @@ router.post("/local", async (req, res) => {
     });
   }
 
-  const pyCmd = getPythonCommand();
-
-  // Mode: Cloud (Gemini-powered)
+  // Mode: Cloud (Gemini-powered) - self-healing and zero dependencies on host (no python/ffmpeg required)
   if (mode === "cloud") {
-    console.log(`[Cloud Transcript] Downloading audio track for Instagram URL: ${url}`);
-    const downloadScript = path.join(__dirname, "..", "scripts", "instagram_download.py");
-    
-    let stdoutData = "";
-    let stderrData = "";
-    let processError = null;
+    try {
+      console.log(`[Cloud Transcript] Initiating self-healing binary check...`);
+      const ytdlpPath = await ensureYtdlp();
 
-    const child = spawn(pyCmd, [downloadScript, url]);
+      const tempDir = path.join(__dirname, "..", "data", "temp_downloads");
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
 
-    child.stdout.on("data", (data) => {
-      stdoutData += data.toString();
-    });
+      // Generate a unique identifier for this download
+      const tempId = `dl_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      const outputTemplate = path.join(tempDir, `${tempId}.%(ext)s`);
 
-    child.stderr.on("data", (data) => {
-      stderrData += data.toString();
-    });
+      console.log(`[Cloud Transcript] Spawning yt-dlp CLI download: ${ytdlpPath} -f bestaudio -o "${outputTemplate}" "${url}"`);
 
-    child.on("error", (err) => {
-      processError = err;
-    });
+      let stderrData = "";
+      // Spawn yt-dlp binary directly to download raw audio track (no ffmpeg conversion needed)
+      const child = spawn(ytdlpPath, ["-f", "bestaudio", "-o", outputTemplate, url]);
 
-    child.on("close", async (code) => {
-      if (processError) {
-        console.error("[Cloud Transcript] Child process error:", processError);
-        if (processError.code === "ENOENT") {
+      child.stderr.on("data", (data) => {
+        stderrData += data.toString();
+      });
+
+      child.on("close", async (code) => {
+        if (code !== 0) {
+          console.error(`[Cloud Transcript] Download failed with code ${code}. Stderr: ${stderrData}`);
           return res.status(500).json({
             success: false,
-            error: "PYTHON_NOT_FOUND",
-            message: "Python was not found on your system. Please install Python 3.9+ to enable download utility.",
-          });
-        }
-        return res.status(500).json({
-          success: false,
-          error: "EXECUTION_ERROR",
-          message: `Failed to spawn download script: ${processError.message}`,
-        });
-      }
-
-      if (code !== 0) {
-        console.error(`[Cloud Transcript] Download failed with code ${code}. Stderr: ${stderrData}`);
-        return res.status(500).json({
-          success: false,
-          error: "DOWNLOAD_FAILED",
-          message: `Audio download failed. Check if yt-dlp is installed and the post is public.`,
-          details: stderrData || stdoutData,
-        });
-      }
-
-      try {
-        const result = JSON.parse(stdoutData.trim());
-        if (!result.success) {
-          return res.status(400).json({
-            success: false,
-            error: result.error_code || "DOWNLOAD_FAILED",
-            message: result.error || "Failed to download audio track.",
+            error: "DOWNLOAD_FAILED",
+            message: "Failed to download audio track. Ensure the post is public and has audio.",
           });
         }
 
-        const audioPath = result.audio_path;
-        console.log(`[Cloud Transcript] Audio downloaded successfully to ${audioPath}. Transcribing via Gemini...`);
-
-        // Send to Gemini service
-        const mimeType = "audio/mp3";
-        const aiResponse = await googleAIService.transcribeAudio(audioPath, mimeType);
-
-        // Delete temporary audio track
         try {
-          fs.unlinkSync(audioPath);
+          // Find the downloaded file
+          const files = fs.readdirSync(tempDir);
+          const matchedFile = files.find((f) => f.startsWith(tempId));
+
+          if (!matchedFile) {
+            return res.status(500).json({
+              success: false,
+              error: "FILE_NOT_FOUND",
+              message: "Downloaded audio file was not found in temp directory.",
+            });
+          }
+
+          const audioPath = path.join(tempDir, matchedFile);
+          const ext = path.extname(matchedFile).toLowerCase();
+          
+          // Map extension to mime-type for Gemini
+          let mimeType = "audio/mp3";
+          if (ext === ".m4a") mimeType = "audio/x-m4a";
+          else if (ext === ".webm") mimeType = "audio/webm";
+          else if (ext === ".wav") mimeType = "audio/wav";
+          else if (ext === ".aac") mimeType = "audio/aac";
+
+          console.log(`[Cloud Transcript] Found download: ${matchedFile} (${mimeType}). Transcribing via Gemini...`);
+
+          // Call Google AI Service to transcribe the audio track
+          const aiResponse = await googleAIService.transcribeAudio(audioPath, mimeType);
+
+          // Clean up the downloaded file
+          try {
+            fs.unlinkSync(audioPath);
+          } catch (e) {
+            console.error("Cleanup error deleting temp audio file:", e);
+          }
+
+          return res.json({
+            success: true,
+            transcript: aiResponse.transcript,
+            language: lang,
+            durationSeconds: null,
+            title: "Instagram Reel",
+          });
+
         } catch (err) {
-          console.error("Failed to delete temp audio path:", err);
+          console.error("[Cloud Transcript] Gemini API transcription failed:", err);
+          return res.status(500).json({
+            success: false,
+            error: "CLOUD_TRANSCRIPTION_FAILED",
+            message: `Gemini Cloud Transcription failed: ${err.message}`,
+          });
         }
+      });
 
-        return res.json({
-          success: true,
-          transcript: aiResponse.transcript,
-          language: lang,
-          durationSeconds: result.duration,
-          title: result.title,
-        });
-
-      } catch (err) {
-        console.error("Gemini Cloud Transcription Error:", err);
-        return res.status(500).json({
-          success: false,
-          error: "CLOUD_TRANSCRIPTION_FAILED",
-          message: `Cloud transcription failed: ${err.message}`,
-        });
-      }
-    });
+    } catch (err) {
+      console.error("[Cloud Transcript] Setup/execution error:", err);
+      return res.status(500).json({
+        success: false,
+        error: "DOWNLOAD_INIT_FAILED",
+        message: `Failed to initialize downloader: ${err.message}`,
+      });
+    }
     return;
   }
 
-  // Mode: Local (Whisper local execution)
+  // Mode: Local (Whisper local execution) - requires Python & PyTorch/Whisper installed locally
+  const pyCmd = getPythonCommand();
   const scriptPath = path.join(__dirname, "..", "scripts", "instagram_transcribe.py");
   console.log(`Spawning local transcription process: ${pyCmd} ${scriptPath} "${url}" --model ${model} --language ${lang}`);
 
