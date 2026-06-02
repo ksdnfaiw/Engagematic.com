@@ -620,6 +620,7 @@ async function ensureYtdlp() {
 // Body: { url: string, model?: string, lang?: string, mode?: "local" | "cloud" }
 // ─────────────────────────────────────────────
 router.post("/local", async (req, res) => {
+  const ip = getClientIp(req);
   const { url, model = "small", lang = "auto", mode = "cloud" } = req.body;
 
   if (!url || typeof url !== "string" || !url.trim()) {
@@ -628,6 +629,41 @@ router.post("/local", async (req, res) => {
       error: "INVALID_INPUT",
       message: "Please provide an Instagram video URL.",
     });
+  }
+
+  // Identify user/subscription
+  const authData = await getAuthenticatedUser(req);
+  const isAuth = !!authData;
+  const { subscription } = authData || {};
+
+  // Rate limiting & Quota Check
+  if (isAuth && subscription) {
+    const canPerform = subscription.canPerformAction("generate_transcript");
+    if (!canPerform.allowed) {
+      if (canPerform.reason.includes("Trial transcription limit reached") || canPerform.reason.includes("limit reached")) {
+        return res.status(402).json({
+          success: false,
+          error: "QUOTA_EXCEEDED",
+          message: canPerform.reason,
+          action: "upgrade"
+        });
+      }
+      return res.status(403).json({
+        success: false,
+        error: "FORBIDDEN",
+        message: canPerform.reason
+      });
+    }
+  } else {
+    // 1 without sign up
+    const ANONYMOUS_LIMIT = 1; 
+    if (!checkAndIncrementRateLimit(ip, ANONYMOUS_LIMIT)) {
+      return res.status(429).json({
+        success: false,
+        error: "RATE_LIMIT",
+        message: `You've hit the limit for anonymous users (1 transcription). Please sign in for higher limits.`,
+      });
+    }
   }
 
   // Mode: Cloud (Gemini-powered) - self-healing and zero dependencies on host (no python/ffmpeg required)
@@ -698,6 +734,11 @@ router.post("/local", async (req, res) => {
             fs.unlinkSync(audioPath);
           } catch (e) {
             console.error("Cleanup error deleting temp audio file:", e);
+          }
+
+          // Record usage if authenticated
+          if (isAuth && subscription) {
+            await subscription.recordUsage("generate_transcript");
           }
 
           return res.json({
@@ -821,6 +862,13 @@ router.post("/local", async (req, res) => {
         success: false,
         error: errCode,
         message: resultJson.error || "Local transcription execution error.",
+      });
+    }
+
+    // Record usage if authenticated
+    if (isAuth && subscription) {
+      subscription.recordUsage("generate_transcript").catch((err) => {
+        console.error("Failed to record transcript usage:", err);
       });
     }
 
