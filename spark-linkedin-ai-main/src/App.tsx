@@ -177,6 +177,7 @@ const App = () => (
                   <Route path="/tools/linkedin-engagement-rate-calculator" element={<LinkedInEngagementCalculator />} />
                   <Route path="/tools/linkedin-text-formatter" element={<ErrorBoundary><LinkedInTextFormatter /></ErrorBoundary>} />
                   <Route path="/tools/instagram-transcript-generator" element={<InstagramTranscriptTool />} />
+                  <Route path="/tools/video-transcript-generator" element={<VideoTranscriptTool />} />
                   
                   {/* Dashboard routes with onboarding modal */}
                   <Route element={<DashboardLayout />}>
@@ -185,7 +186,6 @@ const App = () => (
                     <Route path="/post-generator" element={<PostGenerator />} />
                     <Route path="/comment-generator" element={<CommentGenerator />} />
                     <Route path="/content-planner" element={<ContentPlanner />} />
-                    <Route path="/tools/video-transcript-generator" element={<VideoTranscriptTool />} />
                   </Route>
                   {/* Blog Routes */}
                   {/* Static Pages */}
