@@ -89,7 +89,7 @@ const faqData = [
   },
   {
     question: "Is this transcript tool really free?",
-    answer: "Yes! You can generate 1 transcription for free without an account. Create a free account to get 3 transcriptions, or upgrade to Pro for 30 transcriptions per month.",
+    answer: "Yes! You can generate 1 transcription for free without an account. Create a free account to get 3 transcriptions, Starter plan for 10 transcriptions, or Pro for 30 transcriptions per month.",
   },
   {
     question: "How accurate are the transcripts?",

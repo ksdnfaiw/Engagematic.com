@@ -207,7 +207,7 @@ userSubscriptionSchema.pre("save", function (next) {
         this.limits.templatesAccess = true;
         this.limits.linkedinAnalysis = true;
         this.limits.profileAnalyses = 5; // 5 profile analyses per month
-        this.limits.transcriptsPerMonth = 5; // 5 transcripts per month
+        this.limits.transcriptsPerMonth = 10; // 10 transcripts per month
         this.limits.prioritySupport = false;
         this.billing.amount = 199; // ₹199/month (INR)
         break;
