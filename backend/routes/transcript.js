@@ -655,13 +655,13 @@ router.post("/local", async (req, res) => {
       });
     }
   } else {
-    // 1 without sign up
-    const ANONYMOUS_LIMIT = 1; 
+    // 3 without sign up
+    const ANONYMOUS_LIMIT = 3; 
     if (!checkAndIncrementRateLimit(ip, ANONYMOUS_LIMIT)) {
       return res.status(429).json({
         success: false,
         error: "RATE_LIMIT",
-        message: `You've hit the limit for anonymous users (1 transcription). Please sign in for higher limits.`,
+        message: `You've hit the limit for anonymous users (3 transcriptions). Please sign in for higher limits.`,
       });
     }
   }
